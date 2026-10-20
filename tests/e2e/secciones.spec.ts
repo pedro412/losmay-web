@@ -91,7 +91,7 @@ test.describe("Estructura de la landing (fase 2)", () => {
       ["preguntas", "Antes de pedir."],
     ]) {
       await expect(
-        page.getByRole("region", { name: titulo, exact: true }).first(),
+        page.getByRole("region", { name: titulo, exact: true }),
       ).toHaveAttribute("id", id);
     }
   });
@@ -469,8 +469,8 @@ test.describe("Para quién es (#7)", () => {
     await page.setViewportSize(MOVIL);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    const carril = page.locator("#para-quien [tabindex='0']");
-    await expect(carril).toHaveCount(1);
+    const carril = page.getByRole("region", { name: "Tipos de cliente" });
+    await expect(carril).toHaveAttribute("tabindex", "0");
     await carril.focus();
     await expect(carril).toBeFocused();
     const outline = await css(carril, "outline-style");
@@ -494,6 +494,26 @@ test.describe("Para quién es (#7)", () => {
       .toBeGreaterThan(-2);
   });
 
+  test("1024–1195px: sigue en carrusel con tarjetas de 260px, como el flex del diseño", async ({
+    page,
+  }) => {
+    for (const ancho of [1024, 1100, 1180]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/");
+      const carril = page.getByRole("region", { name: "Tipos de cliente" });
+      const sobra = await carril.evaluate(
+        (el) => el.scrollWidth - el.clientWidth,
+      );
+      expect(sobra, `${ancho}px`).toBeGreaterThan(0);
+      for (const t of await carril.locator("article").all()) {
+        expect((await t.boundingBox())!.width, `${ancho}px`).toBeCloseTo(
+          260,
+          0,
+        );
+      }
+    }
+  });
+
   test("escritorio: las 4 tarjetas en una fila, sin carrusel", async ({
     page,
   }) => {
@@ -509,7 +529,7 @@ test.describe("Para quién es (#7)", () => {
       ),
     );
     expect(new Set(ys).size).toBe(1);
-    const carril = page.locator("#para-quien [tabindex='0']");
+    const carril = page.getByRole("region", { name: "Tipos de cliente" });
     const sobra = await carril.evaluate(
       (el) => el.scrollWidth - el.clientWidth,
     );
@@ -531,28 +551,28 @@ test.describe("Pedido de mayoreo (#7)", () => {
       ton: "16 t",
       titulo: "Mínimo de mayoreo",
       detalle: "Entrega programada en obra",
-      aria: "Pedir 16 toneladas por WhatsApp",
+      aria: "16 t: pedir 16 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 16 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "24 t",
       titulo: "Entrega en obra",
       detalle: "Fecha y horario a tu medida",
-      aria: "Pedir 24 toneladas por WhatsApp",
+      aria: "24 t: pedir 24 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 24 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "32 t",
       titulo: "Entrega en obra",
       detalle: "En una o varias entregas",
-      aria: "Pedir 32 toneladas por WhatsApp",
+      aria: "32 t: pedir 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 32 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "+32 t",
       titulo: "Más de 32 toneladas",
       detalle: "Obra grande o entregas por etapa",
-      aria: "Pedir más de 32 toneladas por WhatsApp",
+      aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar más de 32 toneladas de cemento Holcim. Necesito aproximadamente: ",
     },
   ];
@@ -584,6 +604,12 @@ test.describe("Pedido de mayoreo (#7)", () => {
       for (const [i, t] of TARJETAS.entries()) {
         const link = links.nth(i);
         await expect(link).toHaveAccessibleName(t.aria);
+        // El nombre empieza con lo que se ve en grande (WCAG 2.5.3) y el
+        // título y el detalle se anuncian como descripción.
+        expect(t.aria.startsWith(`${t.ton}: `)).toBe(true);
+        await expect(link).toHaveAccessibleDescription(
+          `${t.titulo} ${t.detalle}`,
+        );
         expect(await texto(link)).toBe(`${t.ton} ${t.titulo} ${t.detalle}`);
         const wa = leerWhatsApp((await link.getAttribute("href"))!);
         expect(wa.host).toBe("wa.me");
@@ -1211,7 +1237,7 @@ test.describe("CTA final (#10)", () => {
       expect(
         parseFloat(await css(h2, "line-height")) /
           parseFloat(await css(h2, "font-size")),
-      ).toBeCloseTo(0.92, 2);
+      ).toBeCloseTo(1.05, 2);
       const wa = seccion(page, "cta-titulo").getByRole("link", {
         name: "Cotizar por WhatsApp",
       });
@@ -1494,4 +1520,56 @@ test.describe("Accesibilidad de las secciones", () => {
       expect(fallas).toEqual([]);
     });
   }
+});
+
+/* -------------------------------------------------------------------------- */
+
+test.describe("Analytics: atributos data-track (#12)", () => {
+  test("WhatsApp del hero y del CTA, llamar y cómo llegar", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(
+      seccion(page, "hero-titulo").locator("a[href*='wa.me']"),
+    ).toHaveAttribute("data-ubicacion", "hero");
+    await expect(
+      seccion(page, "cta-titulo").locator("a[href*='wa.me']"),
+    ).toHaveAttribute("data-ubicacion", "cta_final");
+    for (const s of ["hero-titulo", "cta-titulo"]) {
+      await expect(
+        seccion(page, s).locator("a[href*='wa.me']"),
+      ).toHaveAttribute("data-track", "click_whatsapp");
+    }
+    const suc = page.locator("#sucursales");
+    const tels = suc.locator("a[href^='tel:']");
+    const maps = suc.locator("a[href*='google.com/maps']");
+    await expect(tels).toHaveCount(2);
+    await expect(maps).toHaveCount(2);
+    for (const [i, slug] of ["santa_rosalia", "santa_isabel"].entries()) {
+      await expect(tels.nth(i)).toHaveAttribute("data-track", "click_llamar");
+      await expect(tels.nth(i)).toHaveAttribute("data-sucursal", slug);
+      await expect(tels.nth(i)).toHaveAttribute("data-ubicacion", "sucursales");
+      await expect(maps.nth(i)).toHaveAttribute(
+        "data-track",
+        "click_como_llegar",
+      );
+      await expect(maps.nth(i)).toHaveAttribute("data-sucursal", slug);
+    }
+  });
+});
+
+test("listas sin viñetas conservan role=list (Safari/VoiceOver)", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const sinRol = await page.evaluate(() =>
+    [...document.querySelectorAll("main ul, main ol")]
+      .filter(
+        (l) =>
+          getComputedStyle(l).listStyleType === "none" &&
+          l.getAttribute("role") !== "list",
+      )
+      .map((l) => l.closest("section")?.id || l.className),
+  );
+  expect(sinRol).toEqual([]);
 });
