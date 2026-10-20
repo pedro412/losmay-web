@@ -1,0 +1,85 @@
+---
+/**
+ * Íconos de línea del diseño (docs/design/Main.dc.html), en SVG inline.
+ *
+ * Son decorativos: siempre llevan `aria-hidden` y el texto accesible va en el
+ * elemento que los contiene. Toman el color de `currentColor` (usa
+ * `text-rojo`, `text-white`, etc.).
+ *
+ * Tamaños y grosores que usa el diseño:
+ * - 18 px / 2.2: flecha de botones · 18 px / 2: teléfono en botones
+ * - 20 px / 2: pin de dirección · 20 px / 2.2: chevron del menú móvil
+ * - 22 px / 2: menú y cerrar · 24 px / 1.8: tarjetas "Para quién"
+ * - 40 px / 1.8: tarjetas "Por qué Los May"
+ */
+import type { HTMLAttributes } from "astro/types";
+
+const icons = {
+  /** Contratistas */
+  casco:
+    '<path d="M3 18h18"/><path d="M5 18v-3a7 7 0 0 1 14 0v3"/><path d="M10 8.5V5h4v3.5"/>',
+  /** Constructoras y arquitectos */
+  plano:
+    '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h7v10"/><path d="M14 4v6h7"/>',
+  /** Ferreterías y materialistas */
+  tienda:
+    '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M10 20v-6h4v6"/>',
+  /** Desarrolladores */
+  capas:
+    '<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/>',
+  /** Existencia al momento */
+  caja: '<path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/>',
+  /** Todo por escrito */
+  documento:
+    '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h5"/>',
+  /** Crédito a empresas */
+  tarjeta:
+    '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/>',
+  /** Dirección de sucursal */
+  pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  telefono:
+    '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  /** Flecha de botones ("Pedir mayoreo") */
+  "flecha-derecha": '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  /** Chevron de los links del menú móvil */
+  "chevron-derecha": '<path d="M9 6l6 6-6 6"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  cerrar: '<path d="M6 6l12 12M18 6L6 18"/>',
+} as const;
+
+export type IconName = keyof typeof icons;
+
+type Props = Omit<HTMLAttributes<"svg">, "class"> & {
+  name: IconName;
+  /** Lado en px (por defecto 24). */
+  size?: number;
+  /** Grosor del trazo, de 1.8 a 2.2 en el diseño (por defecto 2). */
+  strokeWidth?: number;
+  class?: string;
+};
+
+const {
+  name,
+  size = 24,
+  strokeWidth = 2,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class:list={["block shrink-0", className]}
+  {...rest}
+  set:html={icons[name]}
+/>
