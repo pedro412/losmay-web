@@ -13,8 +13,12 @@
  *
  * Para cualquier otra etiqueta del `<head>` queda el slot `head`
  * (`<Fragment slot="head">…</Fragment>`).
+ *
+ * Google Analytics 4 lo pone `<Analytics>` (solo en producción, ver
+ * src/lib/analytics.ts).
  */
 import { Font } from "astro:assets";
+import Analytics from "../components/Analytics.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Seo from "../components/Seo.astro";
@@ -55,6 +59,8 @@ const { title = seo.titulo, description, noindex, jsonLd } = Astro.props;
     <!-- Fuentes self-hosted. Se precarga la Condensed 800 de los titulares (LCP). -->
     <Font cssVariable="--font-barlow-condensed" preload={[{ weight: 800 }]} />
     <Font cssVariable="--font-barlow" />
+    <!-- GA4: solo en producción y en losmay.com (issue #12) -->
+    <Analytics />
     <slot name="head" />
   </head>
   <body>
