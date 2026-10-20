@@ -31,7 +31,11 @@ const {
 } = Astro.props;
 
 const site = Astro.site ?? new URL(negocio.url);
-const canonical = new URL(Astro.url.pathname, site).href;
+// Sin la diagonal final (menos en la raíz), igual que los links internos
+// (`/aviso-de-privacidad`): el build en formato `directory` da
+// `/aviso-de-privacidad/` como pathname.
+const ruta = Astro.url.pathname.replace(/(.)\/+$/, "$1");
+const canonical = new URL(ruta, site).href;
 const imagen = new URL(seo.imagen.src, site).href;
 ---
 
