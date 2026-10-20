@@ -19,9 +19,15 @@
  * `--breakpoint-md` en global.css). El script de abajo es el único JS de la
  * página: abre y cierra el panel móvil y ajusta su alto al espacio que queda
  * bajo el header (con la página arriba, el topbar también ocupa pantalla).
+ *
+ * Sin JavaScript (`@media (scripting: none)`, ver el `<style>` de abajo) la
+ * hamburguesa se cambia por dos links: «Abrir menú» va a `#menu-movil`, que
+ * se muestra con `:target`, y «Cerrar menú» va a `#barra-movil` (la fila del
+ * header, que ya está a la vista, así que no mueve la página). Tocar un link
+ * del menú también lo cierra, porque cambia el `:target`.
  */
 import WhatsAppIcon from "../assets/icons/whatsapp.svg";
-import { menu, wa } from "../data/site";
+import { menu, ui, wa } from "../data/site";
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 import Logo from "./Logo.astro";
@@ -33,6 +39,9 @@ const inicio = enInicio ? "#inicio" : "/";
 // Botón redondo de WhatsApp (44px): header móvil y escritorio compacto.
 const claseWhatsAppRedondo =
   "flex size-11 shrink-0 items-center justify-center rounded-full bg-whatsapp text-white transition-[filter] duration-150 hover:brightness-110";
+// Hamburguesa (44px). La comparten el botón y su respaldo sin JS.
+const claseBotonMenu =
+  "flex size-11 items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino";
 const links = menu.map(({ label, href }) => ({
   label,
   href: enInicio ? href : `/${href}`,
@@ -44,8 +53,11 @@ const links = menu.map(({ label, href }) => ({
   data-header
 >
   <!-- Móvil -->
-  <div class="flex h-16 items-center justify-between gap-3 px-4 md:hidden">
-    <a href={inicio} aria-label="Los May — inicio" class="block shrink-0">
+  <div
+    id="barra-movil"
+    class="flex h-16 items-center justify-between gap-3 px-4 md:hidden"
+  >
+    <a href={inicio} aria-label={ui.irAlInicio} class="block shrink-0">
       <Logo class="w-[124px]" decorative />
     </a>
     <div class="flex items-center gap-2">
@@ -53,18 +65,20 @@ const links = menu.map(({ label, href }) => ({
         href={wa.general}
         target="_blank"
         rel="noopener"
-        aria-label="Cotizar por WhatsApp"
+        aria-label={ui.cotizarWhatsApp}
         class={claseWhatsAppRedondo}
       >
         <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
       </a>
       <button
         type="button"
-        aria-label="Abrir menú"
+        aria-label={ui.abrirMenu}
         aria-expanded="false"
         aria-controls="menu-movil"
-        class="group flex size-11 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino"
+        class:list={["group cursor-pointer", claseBotonMenu]}
         data-menu-toggle
+        data-label-abrir={ui.abrirMenu}
+        data-label-cerrar={ui.cerrarMenu}
       >
         <Icon name="menu" size={22} class="group-aria-expanded:hidden" />
         <Icon
@@ -73,15 +87,34 @@ const links = menu.map(({ label, href }) => ({
           class="hidden group-aria-expanded:block"
         />
       </button>
+      <!-- Respaldo sin JavaScript (ocultos si hay JS; ver el <style>) -->
+      <a
+        href="#menu-movil"
+        aria-label={ui.abrirMenu}
+        class:list={["hidden", claseBotonMenu]}
+        data-menu-sin-js="abrir"
+      >
+        <Icon name="menu" size={22} />
+      </a>
+      <a
+        href="#barra-movil"
+        aria-label={ui.cerrarMenu}
+        class:list={["hidden", claseBotonMenu]}
+        data-menu-sin-js="cerrar"
+      >
+        <Icon name="cerrar" size={22} />
+      </a>
     </div>
   </div>
 
-  <!-- Menú móvil: oculto con `hidden` hasta que se abre -->
+  <!--
+    Menú móvil: oculto hasta que se abre (con JS, `data-abierto`; sin JS,
+    `:target`). `scroll-mt-16` evita que el `:target` mueva la página.
+  -->
   <nav
     id="menu-movil"
     aria-label="Menú"
-    hidden
-    class="absolute inset-x-0 top-16 flex max-h-[calc(100dvh-4rem)] flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px] shadow-marino/18 md:hidden"
+    class="absolute inset-x-0 top-16 hidden max-h-[calc(100dvh-4rem)] scroll-mt-16 flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px] shadow-marino/18 max-md:data-abierto:flex"
     data-menu
   >
     {links.map(({ label, href }) => (
@@ -99,13 +132,13 @@ const links = menu.map(({ label, href }) => ({
       </a>
     ))}
     <Button href={wa.general} variant="whatsapp" external block class="mt-4">
-      Cotizar por WhatsApp
+      {ui.cotizarWhatsApp}
     </Button>
   </nav>
 
   <!-- Escritorio -->
   <div class="hidden items-center justify-between gap-4 py-3.5 page-gutter md:flex lg:gap-6 xl:gap-8">
-    <a href={inicio} aria-label="Los May — inicio" class="block shrink-0">
+    <a href={inicio} aria-label={ui.irAlInicio} class="block shrink-0">
       <Logo class="w-[164px]" decorative />
     </a>
     <nav
@@ -124,7 +157,7 @@ const links = menu.map(({ label, href }) => ({
         href={wa.general}
         target="_blank"
         rel="noopener"
-        aria-label="Cotizar por WhatsApp"
+        aria-label={ui.cotizarWhatsApp}
         class:list={[claseWhatsAppRedondo, "lg:hidden"]}
       >
         <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
@@ -138,12 +171,34 @@ const links = menu.map(({ label, href }) => ({
           external
           class="whitespace-nowrap"
         >
-          Cotizar por WhatsApp
+          {ui.cotizarWhatsApp}
         </Button>
       </div>
     </nav>
   </div>
 </header>
+
+<style>
+  /*
+   * Respaldo sin JavaScript: en lugar del botón (que no haría nada) se ven
+   * los links a `#menu-movil` / `#barra-movil`, y el panel se abre con
+   * `:target`. Este CSS va sin capa, así que gana sobre la clase `hidden` de
+   * Tailwind (que vive en la capa `utilities`).
+   */
+  @media (scripting: none) and (width < 47.5rem) {
+    [data-menu-toggle] {
+      display: none;
+    }
+    [data-menu-sin-js="abrir"],
+    [data-header]:has(#menu-movil:target) [data-menu-sin-js="cerrar"],
+    #menu-movil:target {
+      display: flex;
+    }
+    [data-header]:has(#menu-movil:target) [data-menu-sin-js="abrir"] {
+      display: none;
+    }
+  }
+</style>
 
 <script>
   const header = document.querySelector<HTMLElement>("[data-header]");
@@ -152,6 +207,8 @@ const links = menu.map(({ label, href }) => ({
 
   if (header && boton && panel) {
     const estaAbierto = () => boton.getAttribute("aria-expanded") === "true";
+    const etiqueta = (abierto: boolean) =>
+      (abierto ? boton.dataset.labelCerrar : boton.dataset.labelAbrir) ?? "";
 
     // El panel empieza bajo el header, que con la página arriba queda bajo
     // el topbar. El `max-h` de CSS no puede saberlo, así que al abrir (y al
@@ -165,8 +222,8 @@ const links = menu.map(({ label, href }) => ({
 
     const cambiar = (abrir: boolean, devolverFoco = false) => {
       boton.setAttribute("aria-expanded", String(abrir));
-      boton.setAttribute("aria-label", abrir ? "Cerrar menú" : "Abrir menú");
-      panel.hidden = !abrir;
+      boton.setAttribute("aria-label", etiqueta(abrir));
+      panel.toggleAttribute("data-abierto", abrir);
       if (abrir) {
         ajustarAlto();
         window.addEventListener("scroll", ajustarAlto, { passive: true });

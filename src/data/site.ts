@@ -280,6 +280,20 @@ export interface LinkMenu {
   href: `#${string}`;
 }
 
+/**
+ * Textos fijos de la interfaz que se repiten en varios componentes (botones,
+ * `aria-label` y skip link), para que no se desalineen entre sí.
+ */
+export const ui = {
+  /** Botones y links de WhatsApp del header y del menú móvil. */
+  cotizarWhatsApp: "Cotizar por WhatsApp",
+  abrirMenu: "Abrir menú",
+  cerrarMenu: "Cerrar menú",
+  /** Nombre accesible del logo, que lleva al inicio. */
+  irAlInicio: "Los May — inicio",
+  saltarAlContenido: "Saltar al contenido",
+} as const;
+
 /** Links del header y del menú móvil, con el anchor de cada sección. */
 export const menu: readonly LinkMenu[] = [
   { label: "Pedir mayoreo", href: "#pedido" },
@@ -428,6 +442,10 @@ export const cemento = {
     { etiqueta: "Marca", valor: "Holcim Apasco" },
     // TODO(cliente): validar el −35% CO₂ contra el empaque o la ficha técnica
     // (issue #15).
+    // Ojo (fase 2): Barlow no tiene el «₂» (U+2082) en ningún subconjunto de
+    // Fontsource, así que se dibujaría con la fuente de respaldo. Al mostrar
+    // este valor, pintar el 2 como `CO<sub>2</sub>` (o con el «2» normal y
+    // `font-variant-position: sub`) en lugar del carácter U+2082.
     { etiqueta: "Emisiones", valor: "−35% CO₂, según empaque" },
   ],
   atributos: ["Buen desempeño", "Buen rendimiento", "Fácil de colocar"],
