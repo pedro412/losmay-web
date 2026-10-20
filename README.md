@@ -69,7 +69,7 @@ docs/design/           diseño de referencia
 `src/layouts/BaseLayout.astro` arma todas las páginas: `<html lang="es-MX">`, `theme-color`, fuentes, skip link "Saltar al contenido", topbar, header, `<main id="contenido">` y footer. Los metadatos de SEO los pone `<Seo>` (ver [SEO](#seo)); para otras etiquetas del `<head>` está el slot `head` (`<Fragment slot="head">…</Fragment>`).
 
 - **Header** (`src/components/Header.astro`): sticky. Bajo 760px muestra logo, WhatsApp redondo y hamburguesa; desde 760px, logo, los 5 links y el botón de WhatsApp. Entre 760 y 1023px la fila del diseño no cabe, así que el botón de WhatsApp se reduce al redondo de 44px y los espacios se compactan. El cambio es solo CSS.
-- **Menú móvil**: el único JS de la página (`<script>` en `Header.astro`). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio. Al abrirse limita el alto del panel al espacio que queda bajo el header, para que en pantallas bajas el botón de WhatsApp se alcance completo.
+- **Menú móvil**: el único JS propio de la página (`<script>` en `Header.astro`; en producción se suma el de GA4, ver [Analytics](#analytics-ga4)). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio. Al abrirse limita el alto del panel al espacio que queda bajo el header, para que en pantallas bajas el botón de WhatsApp se alcance completo.
 - **Menú móvil sin JavaScript**: con `@media (scripting: none)` el botón se cambia por dos links, «Abrir menú» (`#menu-movil`, que se muestra con `:target`) y «Cerrar menú» (`#barra-movil`). Tocar un link del menú también lo cierra.
 - **Anchors**: `scroll-behavior: smooth` (si no hay `prefers-reduced-motion`) y `scroll-margin-top: var(--altura-header)` en todo `id` dentro de `<main>`, para que el header no tape el inicio de la sección. Si cambia la altura del header, actualiza `--altura-header` en `global.css`.
 - **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). El link al aviso de privacidad (`/aviso-de-privacidad`) solo se muestra cuando existe `src/pages/aviso-de-privacidad.astro` (llega en el issue #13), para no publicar un link roto. Los links miden 44px de alto y el foco se ve en blanco sobre el marino (`foco-sobre-marino` en `global.css`).
@@ -116,6 +116,76 @@ Las pruebas están en `tests/e2e/seo.spec.ts`. El JSON-LD pasa el validador de s
 - [ ] Verificar el dominio en [Google Search Console](https://search.google.com/search-console) como propiedad de **dominio** (registro TXT en el DNS de Hostinger) y enviar `https://losmay.com/sitemap-index.xml`.
 - [ ] Cliente: coordenadas del pin de cada sucursal en Google Business para el `geo` del JSON-LD (`geo` en `sucursales`, `site.ts`). Mientras sea `null`, se omite.
 - [ ] Recomendación al cliente: tener al día los perfiles de **Google Business** de las 2 sucursales (nombre, dirección, teléfono, horario, fotos y el link a `https://losmay.com/`), con los mismos datos que la página. En búsquedas locales Google se apoya más en esos perfiles que en el sitio.
+
+## Analytics (GA4)
+
+Google Analytics 4 con `gtag.js`, sin Partytown, y eventos de clic en los botones de conversión (issue [#12](https://github.com/pedro412/losmay-web/issues/12)). Código: `src/components/Analytics.astro` (en el `<head>` de `BaseLayout`) y `src/lib/analytics.ts`.
+
+### Cuándo se carga
+
+`gtag.js` solo se carga y solo se manda algo cuando se cumplen las cuatro condiciones:
+
+| Condición                                                 | Dónde se revisa | Si no se cumple                            |
+| --------------------------------------------------------- | --------------- | ------------------------------------------ |
+| `PUBLIC_GA_ID` definido (ver `.env.example`)              | build (`idGa`)  | el `<script>` ni siquiera se genera        |
+| Build de producción (`import.meta.env.PROD`)              | build           | `npm run dev` no lleva nada                |
+| En Vercel, entorno `production` (`VERCEL_ENV`)            | build           | los previews no llevan nada                |
+| El dominio es `losmay.com` o `www.losmay.com` (`hostsGa`) | navegador       | en localhost y `*.vercel.app` no hace nada |
+
+La variable va solo en el entorno **Production** de Vercel, así que los previews ya no la tienen; las otras dos revisiones son por si alguien la agrega donde no va. Un ID con formato inválido detiene el build. Las variables `PUBLIC_*` se escriben en el HTML al compilar: después de agregar o cambiar el ID hay que volver a publicar.
+
+### Eventos
+
+Un solo listener en `document` lee `data-track` y los parámetros (`data-ubicacion`, `data-sucursal`) del link que se tocó. Los componentes no llevan JS; solo ponen los atributos con `track()`:
+
+```astro
+<a href={wa.general} {...track("click_whatsapp", { ubicacion: "hero" })}>
+```
+
+| Evento              | Parámetros                                                                                                          | Dónde                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `click_whatsapp`    | `ubicacion`: `header`, `menu_movil`, `hero`, `pedido_16t`, `pedido_24t`, `pedido_32t`, `pedido_mas32t`, `cta_final` | todos los botones de WhatsApp |
+| `click_llamar`      | `sucursal`: `santa_rosalia`, `santa_isabel`; `ubicacion`: `sucursales`, `footer`                                    | links `tel:`                  |
+| `click_como_llegar` | `sucursal`: `santa_rosalia`, `santa_isabel`                                                                         | links de Google Maps          |
+
+`header` cubre los tres botones de WhatsApp de la barra (redondo en móvil, redondo en escritorio compacto y verde desde 1024px). Los tipos de `track()` solo aceptan esos eventos y ubicaciones: para un botón nuevo, agrega su `ubicacion` a `UbicacionWhatsApp` o `UbicacionLlamar` en `src/lib/analytics.ts`.
+
+Las pruebas (`tests/e2e/analytics.spec.ts`) compilan con un ID falso, sirven el build como si fuera `https://losmay.com` e interceptan las requests a Google con `page.route`, así que no sale nada a la red. Revisan que `window.dataLayer` reciba cada evento con sus parámetros y que en localhost no se cargue nada.
+
+### DebugView
+
+Abre `https://losmay.com/?debug_mode=1` (o usa la extensión Google Analytics Debugger): los hits de esa visita salen en GA4 → Administrar → DebugView en unos segundos. Toca cada botón y revisa que llegue el evento con su `ubicacion` o `sucursal`.
+
+### Convención de UTMs
+
+GA4 toma solo los parámetros UTM de la URL de entrada; los links internos y los de WhatsApp no llevan UTMs. Para los posts, anuncios y perfiles:
+
+- Todo en minúsculas, sin acentos ni espacios, con guiones: `mayoreo-holcim`, no `Mayoreo Holcim`.
+- `utm_source`: de dónde viene la visita: `facebook`, `instagram`, `whatsapp`, `google`.
+- `utm_medium`: `social` (publicación orgánica o estado de WhatsApp), `paid_social` (anuncio pagado en Meta), `cpc` (anuncio de Google), `organic` (perfil de Google Business). Con estos valores GA4 asigna bien los canales.
+- `utm_campaign`: la campaña, igual en todas las piezas: `mayoreo-holcim`. Si hay varias temporadas, con el mes: `mayoreo-holcim-2026-11`.
+- `utm_content`: la pieza concreta, para comparar: `post-4x5`, `video-15s`, `historia-1`.
+
+| Pieza                        | URL                                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Post orgánico en Facebook    | `https://losmay.com/?utm_source=facebook&utm_medium=social&utm_campaign=mayoreo-holcim&utm_content=post-4x5`        |
+| Anuncio en Instagram         | `https://losmay.com/?utm_source=instagram&utm_medium=paid_social&utm_campaign=mayoreo-holcim&utm_content=video-15s` |
+| Estado de WhatsApp           | `https://losmay.com/?utm_source=whatsapp&utm_medium=social&utm_campaign=mayoreo-holcim&utm_content=estado`          |
+| Sitio web en Google Business | `https://losmay.com/?utm_source=google&utm_medium=organic&utm_campaign=google-business`                             |
+
+El [Campaign URL Builder](https://ga-dev-tools.google/campaign-url-builder/) arma las URLs. No pongas UTMs en la canónica ni en links dentro del sitio.
+
+### Pendiente (manual)
+
+- [ ] Cliente: propiedad de GA4 de Los May, o crearla nosotros y transferirla (issue #15). Flujo de datos web para `https://losmay.com`.
+- [ ] Agregar `PUBLIC_GA_ID` en Vercel, solo en **Production**, y volver a publicar.
+- [ ] En GA4 → Administrar → Definiciones personalizadas: crear las dimensiones de evento `ubicacion` y `sucursal` (sin esto los parámetros no salen en los informes, solo en DebugView).
+- [ ] Marcar `click_whatsapp` como **evento clave** (Administrar → Eventos clave → Nuevo evento clave, nombre exacto `click_whatsapp`).
+- [ ] Probar con DebugView en `https://losmay.com/?debug_mode=1` que lleguen los tres eventos con su `ubicacion` / `sucursal`, y que en un preview de Vercel no se mande nada.
+- [ ] Recomendado: retención de datos en 14 meses (Administrar → Recopilación y conservación de datos).
+- [ ] Si se agrega una Content-Security-Policy, permitir `https://www.googletagmanager.com` en `script-src` y `https://*.google-analytics.com` y `https://*.analytics.google.com` en `connect-src`.
+
+El aviso de privacidad (issue #13) debe mencionar las cookies e identificadores de Google Analytics.
 
 ## Diseño
 
