@@ -1,0 +1,124 @@
+---
+/**
+ * Aviso de privacidad (`/aviso-de-privacidad`, issue #13).
+ *
+ * Mismo layout que la landing (topbar, footer y GA4), con el header
+ * simplificado: solo logo y WhatsApp. El texto vive en `avisoPrivacidad`
+ * (src/data/site.ts) y menciona Google Analytics y sus cookies.
+ *
+ * TODO(cliente): el texto es un BORRADOR pendiente de aprobación de Los May o
+ * de su asesor legal. Mientras tanto:
+ * - Se muestra el aviso de `avisoPrivacidad.borrador` arriba del texto.
+ * - La página lleva `noindex` y no sale en el sitemap (está en
+ *   `seo.rutasSinIndexar`).
+ * - Razón social, domicilio fiscal, contacto de privacidad y fecha van entre
+ *   corchetes y se ven resaltados en amarillo (`<Texto>`).
+ *
+ * Banner de cookies: no se pone. En México la ley no pide un consentimiento
+ * previo para cookies de medición como en la Unión Europea; basta con
+ * informarlo en el aviso, que está enlazado desde el footer de todas las
+ * páginas (ver README, «Aviso de privacidad»).
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
+import Texto from "../components/Texto.astro";
+import { avisoPrivacidad, negocio, ui } from "../data/site";
+
+const {
+  titulo,
+  seoTitulo,
+  seoDescripcion,
+  borrador,
+  actualizacion,
+  introduccion,
+  secciones,
+} = avisoPrivacidad;
+
+const claseLink =
+  "font-semibold text-marino underline decoration-1 underline-offset-2 hover:decoration-rojo hover:decoration-2";
+---
+
+<BaseLayout title={seoTitulo} description={seoDescripcion} headerSimple>
+  <article
+    aria-labelledby="aviso-titulo"
+    class="bg-white pt-[clamp(28px,4cqi,56px)] pb-[clamp(56px,8cqi,120px)] page-gutter"
+  >
+    <div class="mx-auto max-w-[760px]">
+      <a
+        href="/"
+        class="-my-2.5 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-acero no-underline hover:text-marino hover:underline"
+      >
+        <Icon name="chevron-derecha" size={18} class="rotate-180" />
+        {ui.volverAlInicio}
+      </a>
+
+      <p class="mt-8 eyebrow text-rojo">{negocio.nombre}</p>
+      <h1
+        id="aviso-titulo"
+        class="mt-2.5 mb-0 display-heading text-section text-marino"
+      >
+        {titulo}
+      </h1>
+
+      {borrador && (
+        <div
+          role="note"
+          aria-labelledby="aviso-borrador"
+          class="mt-8 rounded-xl border-2 border-dashed border-pendiente-texto/40 bg-pendiente px-5 py-4 text-pendiente-texto"
+          data-aviso-borrador
+        >
+          <p id="aviso-borrador" class="m-0 font-bold">
+            {borrador.titulo}
+          </p>
+          <p class="mt-1 mb-0 text-[15px]">{borrador.texto}</p>
+        </div>
+      )}
+
+      <p class="mt-6 mb-0 text-[15px] text-acero">
+        <Texto texto={actualizacion} />
+      </p>
+      <p class="mt-4 mb-0 text-lg">{introduccion}</p>
+
+      {secciones.map(({ id, titulo, bloques }) => (
+        <section
+          id={id}
+          aria-labelledby={`${id}-titulo`}
+          class="mt-12 border-t border-borde-suave pt-8"
+        >
+          <h2
+            id={`${id}-titulo`}
+            class="m-0 font-display text-[28px] leading-[1.05] font-bold text-marino uppercase md:text-[32px]"
+          >
+            {titulo}
+          </h2>
+          {bloques.map((bloque) =>
+            typeof bloque === "string" ? (
+              <p class="mt-4 mb-0">
+                <Texto texto={bloque} />
+              </p>
+            ) : (
+              <ul class="mt-3 mb-0 list-disc space-y-2 pl-6 marker:text-rojo">
+                {bloque.lista.map((elemento) => (
+                  <li>
+                    {typeof elemento === "string" ? (
+                      <Texto texto={elemento} />
+                    ) : (
+                      <a
+                        href={elemento.href}
+                        target="_blank"
+                        rel="noopener"
+                        class={claseLink}
+                      >
+                        {elemento.texto}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ),
+          )}
+        </section>
+      ))}
+    </div>
+  </article>
+</BaseLayout>

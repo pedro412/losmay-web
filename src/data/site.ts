@@ -371,6 +371,8 @@ export const ui = {
   /** Nombre accesible del logo, que lleva al inicio. */
   irAlInicio: "Los May — inicio",
   saltarAlContenido: "Saltar al contenido",
+  /** Link de regreso a la landing desde otras páginas (aviso de privacidad). */
+  volverAlInicio: "Volver al inicio",
 } as const;
 
 /** Links del header y del menú móvil, con el anchor de cada sección. */
@@ -400,7 +402,7 @@ export const legal = {
   // logo (issue #15).
   marcas:
     "Holcim y Apasco son marcas registradas de Holcim, usadas con autorización.",
-  /** La página se publica en el issue #13. */
+  /** Página del aviso (issue #13), texto en `avisoPrivacidad`. */
   avisoPrivacidad: {
     label: "Aviso de privacidad",
     href: "/aviso-de-privacidad",
@@ -581,6 +583,203 @@ export const faq: readonly Pregunta[] = [
       "Sí. Dinos el total de tu obra y acordamos entregas según el avance.",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* Aviso de privacidad                                                        */
+/* -------------------------------------------------------------------------- */
+
+/** Link externo dentro del aviso (políticas de Google y WhatsApp). */
+export interface LinkExterno {
+  texto: string;
+  href: string;
+}
+
+/**
+ * Bloque de una sección del aviso: un párrafo (texto) o una lista de viñetas
+ * (cada elemento es texto o un link externo). Los datos por confirmar van
+ * entre corchetes y `<Texto>` los resalta, como en la landing.
+ */
+export type BloqueAviso = string | { lista: readonly (string | LinkExterno)[] };
+
+export interface SeccionAviso {
+  /** Ancla de la sección (`/aviso-de-privacidad#cookies`). */
+  id: string;
+  titulo: string;
+  bloques: readonly BloqueAviso[];
+}
+
+// TODO(cliente): razón social (persona física o moral) que opera Los May, tal
+// como aparece en su constancia de situación fiscal (issue #13).
+const razonSocial = "[razón social]";
+// TODO(cliente): domicilio fiscal completo del responsable (issue #13).
+const domicilioFiscal = "[domicilio fiscal]";
+// TODO(cliente): correo (o teléfono) de la persona o área que atiende los
+// temas de privacidad y las solicitudes ARCO (issue #13).
+const contactoPrivacidad = "[contacto de privacidad]";
+
+/**
+ * Aviso de privacidad integral (`/aviso-de-privacidad`, issue #13), conforme
+ * a la Ley Federal de Protección de Datos Personales en Posesión de los
+ * Particulares (LFPDPPP).
+ *
+ * TODO(cliente): es un BORRADOR propuesto por nosotros. Lo tienen que revisar
+ * y aprobar Los May o su asesor legal. Mientras tanto la página muestra el
+ * aviso de `borrador` y no se indexa (`seo.rutasSinIndexar`). Al aprobarlo:
+ * 1. Llenar los corchetes (razón social, domicilio, contacto y fecha).
+ * 2. Poner `borrador: null`.
+ * 3. Quitar "/aviso-de-privacidad" de `seo.rutasSinIndexar`.
+ */
+export const avisoPrivacidad = {
+  titulo: "Aviso de privacidad",
+  /** Título y descripción para buscadores y para compartir. */
+  seoTitulo: `Aviso de privacidad | ${negocio.nombreCorto}`,
+  seoDescripcion: `Aviso de privacidad de ${negocio.nombre}: qué datos personales tratamos, para qué, el uso de cookies de Google Analytics y cómo ejercer tus derechos ARCO.`,
+  /** Aviso visible arriba del texto. `null` cuando el cliente lo apruebe. */
+  borrador: {
+    titulo: "Borrador pendiente de aprobación",
+    texto:
+      "Este texto es una propuesta que todavía no revisan ni aprueban Los May ni su asesor legal. No es el aviso de privacidad vigente.",
+  } as { titulo: string; texto: string } | null,
+  // TODO(cliente): fecha en que se apruebe y publique el aviso.
+  actualizacion: "Última actualización: [fecha de aprobación]",
+  introduccion: `En ${negocio.nombre} («Los May») cuidamos los datos personales que nos compartes. Este aviso explica qué datos tratamos, para qué los usamos, con quién los compartimos y cómo puedes ejercer tus derechos.`,
+  secciones: [
+    {
+      id: "responsable",
+      titulo: "Quién es responsable de tus datos",
+      bloques: [
+        `${razonSocial}, que opera con el nombre comercial ${negocio.nombre}, con domicilio en ${domicilioFiscal}, es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y demás normativa aplicable.`,
+        `Para cualquier asunto relacionado con tus datos personales puedes escribirnos a ${contactoPrivacidad}.`,
+      ],
+    },
+    {
+      id: "datos",
+      titulo: "Qué datos personales tratamos",
+      bloques: [
+        "Este sitio no tiene formularios ni cuentas de usuario. Solo tratamos:",
+        {
+          lista: [
+            "Los datos que tú nos das al escribirnos por WhatsApp o al llamar a una sucursal: tu nombre, tu número de teléfono, la ubicación de tu obra o el domicilio de entrega, el material y las cantidades que te interesan y, en su caso, los datos fiscales que nos proporciones para facturar.",
+            "Los datos que se generan al navegar en este sitio por medio de cookies e identificadores de Google Analytics (ver «Cookies y Google Analytics»).",
+          ],
+        },
+        "No tratamos datos personales sensibles. Si nos compartes datos de otra persona (por ejemplo, de quien recibirá el material en la obra), te pedimos que antes le informes y cuentes con su consentimiento.",
+      ],
+    },
+    {
+      id: "finalidades",
+      titulo: "Para qué usamos tus datos",
+      bloques: [
+        "Finalidades necesarias para atender tu solicitud:",
+        {
+          lista: [
+            "Responder tus mensajes y llamadas.",
+            "Prepararte y enviarte cotizaciones.",
+            "Confirmar existencia, programar y entregar el material en tu obra.",
+            "Dar seguimiento a tu pedido, a su pago y, en su caso, a su facturación.",
+          ],
+        },
+        "Finalidades secundarias, que no son necesarias para atender tu pedido:",
+        {
+          lista: [
+            // TODO(cliente): confirmar si Los May manda promociones; si no,
+            // quitar esta finalidad.
+            "Enviarte promociones y novedades de Los May por WhatsApp o por teléfono.",
+            "Medir de forma estadística cómo se usa este sitio para mejorarlo.",
+          ],
+        },
+        `Si no quieres que usemos tus datos para las finalidades secundarias, avísanos en cualquier momento por WhatsApp o en ${contactoPrivacidad}. Tu negativa no afecta la atención de tus pedidos. Para la medición del sitio también puedes bloquear las cookies como se explica abajo.`,
+      ],
+    },
+    {
+      id: "cookies",
+      titulo: "Cookies y Google Analytics",
+      bloques: [
+        "Este sitio usa Google Analytics 4, un servicio de Google LLC, para saber cuántas personas lo visitan y qué botones usan. Para ello, Google Analytics guarda cookies en tu navegador (como _ga y _ga_*) y recopila de forma automática:",
+        {
+          lista: [
+            "Un identificador aleatorio de tu navegador o dispositivo.",
+            "Las páginas que visitas, cuánto tiempo y desde qué sitio, publicación o anuncio llegaste.",
+            "Los botones que tocas para escribirnos por WhatsApp, llamarnos o ver cómo llegar a una sucursal.",
+            "Datos técnicos como el tipo de dispositivo, el navegador, el sistema operativo, el idioma y la ciudad o región aproximada desde donde te conectas.",
+          ],
+        },
+        "Usamos esta información solo de forma agregada y estadística: no la usamos para identificarte ni la cruzamos con los datos que nos das por WhatsApp o por teléfono. Google Analytics 4 no registra ni guarda tu dirección IP. Google trata esta información conforme a sus propias políticas y puede guardarla en servidores fuera de México.",
+        "Puedes bloquear o borrar las cookies desde la configuración de tu navegador, navegar en modo privado o instalar el complemento de inhabilitación de Google Analytics. El sitio funciona igual sin ellas.",
+        {
+          lista: [
+            {
+              texto:
+                "Cómo usa Google la información de los sitios que usan sus servicios",
+              href: "https://policies.google.com/technologies/partner-sites?hl=es-419",
+            },
+            {
+              texto: "Complemento de inhabilitación de Google Analytics",
+              href: "https://tools.google.com/dlpage/gaoptout?hl=es-419",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "transferencias",
+      titulo: "Con quién compartimos tus datos",
+      bloques: [
+        "No vendemos ni rentamos tus datos personales. Solo los compartimos:",
+        {
+          lista: [
+            "Con proveedores que nos prestan servicios y que solo pueden usarlos para eso: Google LLC (estadísticas del sitio) y Vercel Inc. (alojamiento del sitio).",
+            "Con autoridades competentes, cuando la ley nos obligue o nos lo requieran conforme a ella.",
+          ],
+        },
+        "Ninguno de estos casos requiere tu consentimiento conforme a la ley.",
+        "WhatsApp es un servicio de WhatsApp LLC (Meta). Cuando nos escribes por WhatsApp, WhatsApp también trata tus datos conforme a su propia política de privacidad.",
+        {
+          lista: [
+            {
+              texto: "Política de privacidad de WhatsApp",
+              href: "https://www.whatsapp.com/legal/privacy-policy?lang=es_LA",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "derechos-arco",
+      titulo: "Tus derechos ARCO",
+      bloques: [
+        "Tienes derecho a saber qué datos tenemos de ti y cómo los usamos (Acceso), a pedirnos que los corrijamos si están incompletos o son inexactos (Rectificación), a que los eliminemos de nuestros registros (Cancelación) y a oponerte a que los usemos para fines específicos (Oposición).",
+        `Para ejercerlos, envía tu solicitud a ${contactoPrivacidad} con:`,
+        {
+          lista: [
+            "Tu nombre y un medio para responderte.",
+            "Una identificación oficial tuya o, en su caso, de tu representante, con el documento que acredite la representación.",
+            "Una descripción clara de los datos y del derecho que quieres ejercer.",
+            "Cualquier dato o documento que nos ayude a localizar tu información.",
+          ],
+        },
+        // TODO(cliente): el asesor legal puede precisar aquí los plazos de
+        // respuesta de la ley vigente.
+        "Te responderemos por el medio que nos indiques, en los plazos que establece la ley. Si consideras que tu derecho a la protección de datos personales ha sido vulnerado, puedes acudir ante la autoridad competente en la materia.",
+      ],
+    },
+    {
+      id: "revocacion",
+      titulo: "Cómo revocar tu consentimiento o limitar el uso de tus datos",
+      bloques: [
+        `Puedes revocar en cualquier momento el consentimiento que nos diste, o pedirnos que dejemos de enviarte promociones, escribiéndonos por WhatsApp o a ${contactoPrivacidad}. Si la revocación afecta datos necesarios para un pedido en curso, es posible que no podamos completarlo.`,
+        "Para limitar la publicidad que recibes por teléfono, también puedes inscribirte en el Registro Público para Evitar Publicidad (REPEP) de la Procuraduría Federal del Consumidor (Profeco).",
+      ],
+    },
+    {
+      id: "cambios",
+      titulo: "Cambios a este aviso",
+      bloques: [
+        `Podemos actualizar este aviso por cambios en la ley o en nuestra forma de trabajar. Publicaremos cualquier cambio en esta misma página (${negocio.dominio}${legal.avisoPrivacidad.href}), con la fecha de su última actualización.`,
+      ],
+    },
+  ] satisfies readonly SeccionAviso[],
+} as const;
 
 /* -------------------------------------------------------------------------- */
 /* SEO y redes                                                                */
