@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   mapsLink,
   mensajes,
+  pedidos,
   sucursales,
   telLink,
   waLink,
@@ -14,6 +15,13 @@ import {
   MOVIL,
   WHATSAPP,
 } from "./helpers";
+
+/** Header, menú, hero y CTA final, más las tarjetas por tonelaje. */
+const MENSAJES_VALIDOS: string[] = [
+  mensajes.general,
+  mensajes.mayoreo,
+  ...pedidos.map((p) => leerWhatsApp(p.href).texto!),
+];
 
 test.describe("Links de WhatsApp", () => {
   for (const viewport of [MOVIL, ESCRITORIO]) {
@@ -31,7 +39,7 @@ test.describe("Links de WhatsApp", () => {
         const wa = leerWhatsApp(href);
         expect(wa.host).toBe("wa.me");
         expect(wa.numero).toBe(WHATSAPP);
-        expect(wa.texto).toBe(MENSAJE_GENERAL);
+        expect(MENSAJES_VALIDOS).toContain(wa.texto);
         // El texto va codificado con encodeURIComponent (espacios como %20).
         expect(href).toContain("text=Hola%20Los%20May");
         await expect(link).toHaveAttribute("target", "_blank");
@@ -39,6 +47,32 @@ test.describe("Links de WhatsApp", () => {
       }
     });
   }
+
+  test("el header y el hero usan el mensaje general", async ({ page }) => {
+    await page.setViewportSize(ESCRITORIO);
+    await page.goto("/");
+    const links = page.locator(
+      "header a[href*='wa.me'], section[aria-labelledby='hero-titulo'] a[href*='wa.me']",
+    );
+    expect(await links.count()).toBeGreaterThan(0);
+    for (const link of await links.all()) {
+      const wa = leerWhatsApp((await link.getAttribute("href"))!);
+      expect(wa.texto).toBe(MENSAJE_GENERAL);
+    }
+  });
+
+  test("tarjetas por tonelaje y CTA final con su mensaje", async ({ page }) => {
+    await page.goto("/");
+    for (const pedido of pedidos) {
+      const link = page.getByRole("link", { name: pedido.aria });
+      await expect(link).toHaveAttribute("href", pedido.href);
+    }
+    const cta = page
+      .locator("section[aria-labelledby='cta-titulo']")
+      .locator("a[href*='wa.me']");
+    const wa = leerWhatsApp((await cta.getAttribute("href"))!);
+    expect(wa.texto).toBe(mensajes.mayoreo);
+  });
 
   test("los mensajes de site.ts son los del diseño", () => {
     expect(mensajes.general).toBe(

@@ -1,10 +1,28 @@
 ---
+/**
+ * Landing de Los May. Las secciones van en el orden de
+ * docs/design/Main.dc.html. El ancla `#inicio` la pone BaseLayout.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import ParaQuien from "../components/sections/ParaQuien.astro";
+import Pedido from "../components/sections/Pedido.astro";
+import Entregas from "../components/sections/Entregas.astro";
+import Cemento from "../components/sections/Cemento.astro";
+import PorQueLosMay from "../components/sections/PorQueLosMay.astro";
+import Sucursales from "../components/sections/Sucursales.astro";
+import Faq from "../components/sections/Faq.astro";
+import CtaFinal from "../components/sections/CtaFinal.astro";
 ---
 
 <BaseLayout>
-  <!-- Las secciones de la landing llegan en la fase 2 (issues #6 a #10). -->
-  <section class="grid min-h-[60dvh] place-items-center bg-concreto section-pad">
-    <h1 class="display-heading text-section text-marino">Los May</h1>
-  </section>
+  <Hero />
+  <ParaQuien />
+  <Pedido />
+  <Entregas />
+  <Cemento />
+  <PorQueLosMay />
+  <Sucursales />
+  <Faq />
+  <CtaFinal />
 </BaseLayout>
