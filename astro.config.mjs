@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
+import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
+import { negocio, sinIndexar } from "./src/data/site.ts";
 
 // Subconjunto latino de Fontsource: cubre español (á, é, ñ, ¿, ¡) sin
 // descargar cirílico ni vietnamita.
@@ -28,6 +30,16 @@ const variants = (pkg, file, weights) =>
 export default defineConfig({
   // Sitio 100% estático, sin adapter (se sirve desde Vercel como archivos).
   output: "static",
+  // Dominio de producción: base de la canónica, de las URLs de Open Graph y
+  // JSON-LD, del sitemap y del robots.txt.
+  site: negocio.url,
+  integrations: [
+    // `/sitemap-index.xml` con todas las páginas, menos las que no se indexan
+    // (`seo.rutasSinIndexar` en src/data/site.ts).
+    sitemap({
+      filter: (pagina) => !sinIndexar(new URL(pagina).pathname),
+    }),
+  ],
   fonts: [
     {
       provider: fontProviders.local(),
