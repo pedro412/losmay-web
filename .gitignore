@@ -8,3 +8,9 @@ dist/
 .DS_Store
 test-results/
 playwright-report/
+
+# logs
+npm-debug.log*
+
+# editor
+.idea/
