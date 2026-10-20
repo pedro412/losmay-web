@@ -470,9 +470,8 @@ export const pasos: readonly Paso[] = [
   {
     numero: "03",
     titulo: "Entregamos",
-    // TODO(cliente): zonas de entrega fuera de Ciudad del Carmen (issue #15).
     texto:
-      "Llevamos el cemento a tu obra en Ciudad del Carmen y [zonas cercanas].",
+      "Llevamos el cemento a tu obra en Ciudad del Carmen y municipios aledaños.",
   },
 ];
 
@@ -503,10 +502,9 @@ export const beneficios: readonly Beneficio[] = [
     texto: "Cotización clara desde el principio.",
   },
   {
-    // TODO(cliente): ¿hay crédito a empresas? ¿Qué condiciones? (issue #15)
     icono: "tarjeta",
     titulo: "Crédito a empresas",
-    texto: "[Confirmar]",
+    texto: "Pregúntanos por WhatsApp por las condiciones.",
   },
 ];
 
@@ -540,9 +538,8 @@ export const productos = {
   texto:
     "Todo el material de obra negra en un solo lugar, con entrega en el mismo viaje.",
   lista: ["Block", "Varilla", "Arena", "Grava"],
-  // TODO(cliente): catálogo completo además de block, varilla, arena y grava
-  // (issue #15).
-  catalogo: "Catálogo completo: [confirmar con Los May]",
+  catalogo:
+    "Además vigas y, en general, todo el material para construcción. Pregúntanos por lo que necesites.",
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -561,23 +558,21 @@ export const faq: readonly Pregunta[] = [
   },
   {
     pregunta: "¿Entregan en obra?",
-    // TODO(cliente): zonas de entrega fuera de Ciudad del Carmen (issue #15).
-    respuesta: "Sí, en Ciudad del Carmen. Fuera de la ciudad: [zonas].",
+    respuesta:
+      "Sí, en Ciudad del Carmen y municipios aledaños. Pregúntanos por WhatsApp si llegamos a tu zona.",
   },
   {
     pregunta: "¿Facturan?",
-    // TODO(cliente): ¿factura CFDI con RFC? (issue #15)
-    respuesta: "[Confirmar: factura CFDI con tu RFC]",
+    respuesta: "Sí, facturamos tu compra.",
   },
   {
     pregunta: "¿Qué formas de pago aceptan?",
-    // TODO(cliente): formas de pago (issue #15).
-    respuesta: "[Efectivo, transferencia, tarjeta: confirmar]",
+    respuesta: "Todas: efectivo, transferencia y tarjeta de débito o crédito.",
   },
   {
     pregunta: "¿Manejan crédito?",
-    // TODO(cliente): crédito para empresas y clientes recurrentes (issue #15).
-    respuesta: "[Confirmar: crédito para empresas y clientes recurrentes]",
+    respuesta:
+      "Sí. Escríbenos por WhatsApp y te damos la información de crédito.",
   },
   {
     pregunta: "¿Puedo programar entregas por etapa?",

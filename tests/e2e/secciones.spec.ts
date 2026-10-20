@@ -730,7 +730,7 @@ test.describe("Tu pedido en obra (#8)", () => {
       "Acordamos día y horario según el avance de tu obra.",
     );
     await expect(s).toContainText(
-      "Llevamos el cemento a tu obra en Ciudad del Carmen y [zonas cercanas].",
+      "Llevamos el cemento a tu obra en Ciudad del Carmen y municipios aledaños.",
     );
     await expect(s).toContainText("Tu proyecto, nuestra prioridad");
     for (const n of ["01", "02", "03"]) await expect(s).toContainText(n);
@@ -819,7 +819,9 @@ test.describe("El cemento (#8)", () => {
       "Arena",
       "Grava",
     ]);
-    await expect(s).toContainText("Catálogo completo: [confirmar con Los May]");
+    await expect(s).toContainText(
+      "Además vigas y, en general, todo el material para construcción. Pregúntanos por lo que necesites.",
+    );
     await expect(
       s.getByRole("img", { name: "Holcim", exact: true }),
     ).toBeVisible();
@@ -895,7 +897,9 @@ test.describe("Por qué Los May (#9)", () => {
       "Inventario en tiempo real: te confirmamos disponibilidad al instante.",
     );
     await expect(s).toContainText("Cotización clara desde el principio.");
-    await expect(s).toContainText("[Confirmar]");
+    await expect(s).toContainText(
+      "Pregúntanos por WhatsApp por las condiciones.",
+    );
   });
 
   test("cifra roja Condensed 48px, títulos 22px marino, tarjetas blancas radio 16", async ({
@@ -1079,16 +1083,16 @@ test.describe("Preguntas frecuentes (#10)", () => {
     ],
     [
       "¿Entregan en obra?",
-      "Sí, en Ciudad del Carmen. Fuera de la ciudad: [zonas].",
+      "Sí, en Ciudad del Carmen y municipios aledaños. Pregúntanos por WhatsApp si llegamos a tu zona.",
     ],
-    ["¿Facturan?", "[Confirmar: factura CFDI con tu RFC]"],
+    ["¿Facturan?", "Sí, facturamos tu compra."],
     [
       "¿Qué formas de pago aceptan?",
-      "[Efectivo, transferencia, tarjeta: confirmar]",
+      "Todas: efectivo, transferencia y tarjeta de débito o crédito.",
     ],
     [
       "¿Manejan crédito?",
-      "[Confirmar: crédito para empresas y clientes recurrentes]",
+      "Sí. Escríbenos por WhatsApp y te damos la información de crédito.",
     ],
     [
       "¿Puedo programar entregas por etapa?",
@@ -1172,7 +1176,7 @@ test.describe("Preguntas frecuentes (#10)", () => {
     expect(snap).toContain("¿Entregan en obra?");
   });
 
-  test("JSON-LD FAQPage válido, solo con respuestas confirmadas", async ({
+  test("JSON-LD FAQPage válido, con todas las respuestas confirmadas", async ({
     page,
   }) => {
     await page.goto("/");
@@ -1190,7 +1194,7 @@ test.describe("Preguntas frecuentes (#10)", () => {
         q.acceptedAnswer.text,
       ],
     );
-    expect(preguntas).toEqual([FAQ[0], FAQ[5]]);
+    expect(preguntas).toEqual(FAQ);
     for (const q of faq.mainEntity) {
       expect(q["@type"]).toBe("Question");
       expect(q.acceptedAnswer["@type"]).toBe("Answer");
@@ -1258,7 +1262,7 @@ test.describe("CTA final (#10)", () => {
 /* -------------------------------------------------------------------------- */
 
 test.describe("Datos por confirmar", () => {
-  test("todos los textos entre corchetes se ven resaltados en amarillo", async ({
+  test("no queda ningún dato pendiente entre corchetes en la página", async ({
     page,
   }) => {
     await page.goto("/");
@@ -1288,17 +1292,9 @@ test.describe("Datos por confirmar", () => {
       }
       return res;
     });
-    expect(pendientes.map((p) => p.texto).sort()).toEqual(
-      [
-        "[zonas cercanas]",
-        "[confirmar con Los May]",
-        "[Confirmar]",
-        "[zonas]",
-        "[Confirmar: factura CFDI con tu RFC]",
-        "[Efectivo, transferencia, tarjeta: confirmar]",
-        "[Confirmar: crédito para empresas y clientes recurrentes]",
-      ].sort(),
-    );
+    // Los May confirmó todos los datos del diseño (zonas, catálogo, crédito,
+    // factura y formas de pago): ya no debe quedar ningún corchete visible.
+    expect(pendientes.map((p) => p.texto)).toEqual([]);
     for (const p of pendientes) {
       expect(p.fondo, p.texto).toBe(C.pendiente);
       expect(p.color, p.texto).toBe(C.pendienteTexto);
