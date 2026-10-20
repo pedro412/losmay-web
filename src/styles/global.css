@@ -109,14 +109,21 @@
   }
 
   /*
-   * Foco visible de doble anillo (blanco + marino): se distingue tanto sobre
-   * fondos claros como sobre marino.
+   * Foco visible de doble anillo: un separador pegado al elemento y el anillo
+   * de 3px afuera. Sobre fondos claros es blanco + marino; dentro de
+   * `foco-sobre-marino` (footer) se invierte a marino + blanco.
    */
   :focus-visible {
-    outline: 3px solid var(--color-marino);
+    outline: 3px solid var(--foco-anillo, var(--color-marino));
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--color-white);
+    box-shadow: 0 0 0 2px var(--foco-separador, var(--color-white));
   }
+}
+
+/* Invierte los colores del anillo de foco para fondos marino. */
+@utility foco-sobre-marino {
+  --foco-anillo: var(--color-white);
+  --foco-separador: var(--color-marino-900);
 }
 
 /* Etiqueta pequeña sobre los titulares de sección. El color lo pone cada uso. */
