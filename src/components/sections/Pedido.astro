@@ -4,7 +4,10 @@
  *
  * Fondo concreto con cuatro tarjetas-link por tonelaje (`pedidos` en
  * site.ts): cada tarjeta completa es un `<a>` que abre WhatsApp con el pedido
- * escrito, con `aria-label` "Pedir N toneladas por WhatsApp". La cuadrícula es
+ * escrito. Su `aria-label` empieza con lo que se ve en grande ("16 t: pedir
+ * 16 toneladas por WhatsApp"), para que el control por voz lo reconozca
+ * (WCAG 2.5.3), y título y detalle se anuncian como descripción con
+ * `aria-describedby`. La cuadrícula es
  * `auto-fit, minmax(260px, 1fr)` como en el diseño (con tope del 100% para que
  * en pantallas de menos de 300px no se salga de la página).
  *
@@ -17,13 +20,21 @@
 import WhatsAppIcon from "../../assets/icons/whatsapp.svg";
 import Button from "../Button.astro";
 import SectionHeading from "../SectionHeading.astro";
-import { minimoMayoreo, pedidos, type Pedido } from "../../data/site";
+import {
+  minimoMayoreo,
+  pedidos,
+  sucursalesEnLetra,
+  type Pedido,
+} from "../../data/site";
 
 const tituloId = "ped-titulo";
 
 /** `ubicacion` del evento `click_whatsapp`: `pedido_16t`, `pedido_mas32t`. */
 const ubicacion = ({ ton }: Pedido): string =>
   ton === "+32" ? "pedido_mas32t" : `pedido_${ton}t`;
+
+/** Prefijo de los ids de título y detalle de la tarjeta: `ped-pedido_16t`. */
+const idTarjeta = (pedido: Pedido): string => `ped-${ubicacion(pedido)}`;
 ---
 
 <section id="pedido" aria-labelledby={tituloId} class="bg-concreto section-pad">
@@ -50,6 +61,7 @@ const ubicacion = ({ ton }: Pedido): string =>
             target="_blank"
             rel="noopener"
             aria-label={pedido.aria}
+            aria-describedby={`${idTarjeta(pedido)}-titulo ${idTarjeta(pedido)}-detalle`}
             data-track="click_whatsapp"
             data-ubicacion={ubicacion(pedido)}
             class="group flex min-h-24 w-full items-center gap-4 rounded-2xl bg-white py-4 pr-4 pl-5 text-grafito no-underline transition-shadow duration-150 hover:shadow-[0_6px_18px] hover:shadow-marino/12"
@@ -58,10 +70,18 @@ const ubicacion = ({ ton }: Pedido): string =>
               {pedido.etiqueta}
             </span>
             <span class="flex min-w-0 flex-auto flex-col gap-0.5">
-              <span class="text-base font-bold text-grafito">
+              <span
+                id={`${idTarjeta(pedido)}-titulo`}
+                class="text-base font-bold text-grafito"
+              >
                 {pedido.titulo}
               </span>
-              <span class="text-sm text-acero">{pedido.detalle}</span>
+              <span
+                id={`${idTarjeta(pedido)}-detalle`}
+                class="text-sm text-acero"
+              >
+                {pedido.detalle}
+              </span>
             </span>
             <span
               aria-hidden="true"
@@ -77,7 +97,7 @@ const ubicacion = ({ ton }: Pedido): string =>
     <div class="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border-[1.5px] border-dashed border-borde-punteado px-5 py-[18px]">
       <p class="flex-[1_1_280px] text-[15px] text-grafito">
         <strong>¿Menos de {minimoMayoreo} t?</strong> Te atendemos en cualquiera
-        de nuestras dos sucursales.
+        de nuestras {sucursalesEnLetra}.
       </p>
       <Button
         href="#sucursales"

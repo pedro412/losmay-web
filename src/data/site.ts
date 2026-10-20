@@ -134,7 +134,11 @@ export interface Pedido {
   etiqueta: string;
   titulo: string;
   detalle: string;
-  /** Texto accesible del link. */
+  /**
+   * Nombre accesible del link. Empieza con la `etiqueta` visible ("16 t: …")
+   * para que el control por voz la reconozca (WCAG 2.5.3); título y detalle
+   * se anuncian como descripción (`aria-describedby`).
+   */
   aria: string;
   /** Link de WhatsApp con el pedido escrito. */
   href: string;
@@ -145,7 +149,7 @@ const porTonelaje = (ton: number, titulo: string, detalle: string): Pedido => ({
   etiqueta: `${ton} t`,
   titulo,
   detalle,
-  aria: `Pedir ${ton} toneladas por WhatsApp`,
+  aria: `${ton} t: pedir ${ton} toneladas por WhatsApp`,
   href: waLink(mensajes.porTonelaje(ton)),
 });
 
@@ -158,7 +162,7 @@ export const pedidos: readonly Pedido[] = [
     etiqueta: "+32 t",
     titulo: "Más de 32 toneladas",
     detalle: "Obra grande o entregas por etapa",
-    aria: "Pedir más de 32 toneladas por WhatsApp",
+    aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
     href: waLink(mensajes.masDe32),
   },
 ];
