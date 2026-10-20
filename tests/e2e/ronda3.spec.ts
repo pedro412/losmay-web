@@ -208,9 +208,15 @@ test.describe("Único JS de la página (issue #5)", () => {
     });
     await page.goto("/");
     const scripts = await page.evaluate(() =>
-      // El JSON-LD de la FAQ es un `<script>` de datos, no ejecutable.
+      // El JSON-LD de la FAQ es un `<script>` de datos, no ejecutable. El de
+      // GA4 (`data-analytics`, issue #12) no hace nada fuera de losmay.com:
+      // se prueba en analytics.spec.ts.
       [...document.scripts]
-        .filter((s) => s.type !== "application/ld+json")
+        .filter(
+          (s) =>
+            s.type !== "application/ld+json" &&
+            !s.hasAttribute("data-analytics"),
+        )
         .map((s) => ({
           src: s.src,
           codigo: s.textContent ?? "",

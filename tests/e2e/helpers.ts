@@ -11,6 +11,12 @@ export const HAY_AVISO_PRIVACIDAD = ["astro", "md", "mdx"].some((ext) =>
   ),
 );
 
+/**
+ * ID de GA4 falso con el que compila `test:e2e` (ver `playwright.config.ts`),
+ * para probar los eventos sin mandar nada a Google (issue #12).
+ */
+export const GA_ID_PRUEBA = "G-PRUEBA0000";
+
 /** Anchos en los que no debe haber scroll horizontal. */
 export const ANCHOS = [320, 360, 390, 768, 1024, 1440, 1920] as const;
 
