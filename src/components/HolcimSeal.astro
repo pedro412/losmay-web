@@ -1,0 +1,63 @@
+---
+/**
+ * Sello "Holcim · Distribuidor autorizado" del diseño.
+ *
+ * - `borde` (hero): borde marino-line y texto marino-200, logo de 30 px.
+ * - `solido` (sección del producto): fondo marino y texto blanco, logo de 34 px.
+ *
+ * Siempre va sobre marino: el logo de Holcim que tenemos es la versión en
+ * blanco.
+ *
+ * TODO(cliente): confirmar que este es el archivo oficial del logo de Holcim y
+ * que Los May tiene permiso de usarlo como distribuidor autorizado (issue #15).
+ */
+import { Image } from "astro:assets";
+import holcimLogo from "../assets/brand/holcim-logo-blanco.svg";
+
+interface Props {
+  variant?: "borde" | "solido";
+  class?: string;
+}
+
+const { variant = "borde", class: className } = Astro.props;
+
+const styles = {
+  borde: {
+    box: "gap-4 border-[1.5px] border-marino-line px-[18px] py-3.5",
+    logoHeight: 30,
+    logo: "h-[30px]",
+    text: "text-marino-200",
+  },
+  solido: {
+    box: "gap-4 bg-marino px-5 py-4",
+    logoHeight: 34,
+    logo: "h-[34px]",
+    text: "text-white",
+  },
+} as const;
+
+const { box, logoHeight, logo, text } = styles[variant];
+// Proporción del SVG original (283.46 × 66.47).
+const logoWidth = Math.round((logoHeight * 284) / 67);
+---
+
+<div class:list={["inline-flex items-center rounded-[14px]", box, className]}>
+  <Image
+    src={holcimLogo}
+    alt="Holcim"
+    width={logoWidth}
+    height={logoHeight}
+    class:list={["block w-auto", logo]}
+  />
+  <span aria-hidden="true" class="w-px self-stretch bg-marino-line"></span>
+  <span
+    class:list={[
+      "text-xs leading-tight font-bold tracking-[0.1em] uppercase",
+      text,
+    ]}
+  >
+    Distribuidor
+    <br />
+    autorizado
+  </span>
+</div>
