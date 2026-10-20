@@ -12,8 +12,12 @@
  *
  * En la línea legal el link mide 44px y compensa ese alto con márgenes
  * negativos para no mover el layout.
+ *
+ * Analytics (issue #12): los links `tel:` llevan `click_llamar` con
+ * `sucursal` y `ubicacion="footer"`.
  */
 import { legal, negocio, sucursales, telLink } from "../data/site";
+import { sucursalGa, track } from "../lib/analytics";
 import Logo from "./Logo.astro";
 
 // Año de la compilación: se actualiza con cada deploy.
@@ -50,10 +54,14 @@ const hayAvisoPrivacidad =
       <h2 class="mt-0 mb-3 text-[13px] font-bold tracking-[0.12em] text-white uppercase">
         Contacto
       </h2>
-      {sucursales.map(({ nombre, telefono }) => (
+      {sucursales.map(({ id, nombre, telefono }) => (
         <p class="m-0 first-of-type:-mt-2 md:mb-2 md:first-of-type:mt-0">
           <a
             href={telLink(telefono)}
+            {...track("click_llamar", {
+              sucursal: sucursalGa(id),
+              ubicacion: "footer",
+            })}
             class="inline-flex min-h-11 items-center text-white no-underline hover:underline md:inline md:min-h-0"
           >
             {nombre} · {telefono}

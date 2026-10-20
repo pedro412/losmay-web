@@ -25,9 +25,14 @@
  * se muestra con `:target`, y «Cerrar menú» va a `#barra-movil` (la fila del
  * header, que ya está a la vista, así que no mueve la página). Tocar un link
  * del menú también lo cierra, porque cambia el `:target`.
+ *
+ * Analytics (issue #12): los botones de WhatsApp de la barra (redondo y
+ * verde) llevan `click_whatsapp` con `ubicacion="header"`, y el del panel
+ * móvil con `ubicacion="menu_movil"` (atributos de `track()`).
  */
 import WhatsAppIcon from "../assets/icons/whatsapp.svg";
 import { menu, ui, wa } from "../data/site";
+import { track } from "../lib/analytics";
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 import Logo from "./Logo.astro";
@@ -42,6 +47,9 @@ const claseWhatsAppRedondo =
 // Hamburguesa (44px). La comparten el botón y su respaldo sin JS.
 const claseBotonMenu =
   "flex size-11 items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino";
+// Atributos de GA4 de los botones de WhatsApp.
+const trackHeader = track("click_whatsapp", { ubicacion: "header" });
+const trackMenuMovil = track("click_whatsapp", { ubicacion: "menu_movil" });
 const links = menu.map(({ label, href }) => ({
   label,
   href: enInicio ? href : `/${href}`,
@@ -67,6 +75,7 @@ const links = menu.map(({ label, href }) => ({
         rel="noopener"
         aria-label={ui.cotizarWhatsApp}
         class={claseWhatsAppRedondo}
+        {...trackHeader}
       >
         <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
       </a>
@@ -131,7 +140,14 @@ const links = menu.map(({ label, href }) => ({
         />
       </a>
     ))}
-    <Button href={wa.general} variant="whatsapp" external block class="mt-4">
+    <Button
+      href={wa.general}
+      variant="whatsapp"
+      external
+      block
+      class="mt-4"
+      {...trackMenuMovil}
+    >
       {ui.cotizarWhatsApp}
     </Button>
   </nav>
@@ -159,6 +175,7 @@ const links = menu.map(({ label, href }) => ({
         rel="noopener"
         aria-label={ui.cotizarWhatsApp}
         class:list={[claseWhatsAppRedondo, "lg:hidden"]}
+        {...trackHeader}
       >
         <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
       </a>
@@ -170,6 +187,7 @@ const links = menu.map(({ label, href }) => ({
           shape="pill"
           external
           class="whitespace-nowrap"
+          {...trackHeader}
         >
           {ui.cotizarWhatsApp}
         </Button>

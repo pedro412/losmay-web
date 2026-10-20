@@ -13,9 +13,9 @@
  *
  * Abajo, el banner punteado para pedidos chicos, que manda a `#sucursales`.
  *
- * Analytics (issue #12): cada tarjeta lleva `data-track="click_whatsapp"` y
- * `data-ubicacion` (`pedido_16t`, `pedido_24t`, `pedido_32t`,
- * `pedido_mas32t`), que lee el listener delegado de GA4.
+ * Analytics (issue #12): cada tarjeta lleva `click_whatsapp` con
+ * `ubicacion` (`pedido_16t`, `pedido_24t`, `pedido_32t`, `pedido_mas32t`),
+ * que lee el listener delegado de GA4 (atributos de `track()`).
  */
 import WhatsAppIcon from "../../assets/icons/whatsapp.svg";
 import Button from "../Button.astro";
@@ -26,15 +26,12 @@ import {
   sucursalesEnLetra,
   type Pedido,
 } from "../../data/site";
+import { track, ubicacionPedido } from "../../lib/analytics";
 
 const tituloId = "ped-titulo";
 
-/** `ubicacion` del evento `click_whatsapp`: `pedido_16t`, `pedido_mas32t`. */
-const ubicacion = ({ ton }: Pedido): string =>
-  ton === "+32" ? "pedido_mas32t" : `pedido_${ton}t`;
-
 /** Prefijo de los ids de título y detalle de la tarjeta: `ped-pedido_16t`. */
-const idTarjeta = (pedido: Pedido): string => `ped-${ubicacion(pedido)}`;
+const idTarjeta = (pedido: Pedido): string => `ped-${ubicacionPedido(pedido)}`;
 ---
 
 <section id="pedido" aria-labelledby={tituloId} class="bg-concreto section-pad">
@@ -62,8 +59,9 @@ const idTarjeta = (pedido: Pedido): string => `ped-${ubicacion(pedido)}`;
             rel="noopener"
             aria-label={pedido.aria}
             aria-describedby={`${idTarjeta(pedido)}-titulo ${idTarjeta(pedido)}-detalle`}
-            data-track="click_whatsapp"
-            data-ubicacion={ubicacion(pedido)}
+            {...track("click_whatsapp", {
+              ubicacion: ubicacionPedido(pedido),
+            })}
             class="group flex min-h-24 w-full items-center gap-4 rounded-2xl bg-white py-4 pr-4 pl-5 text-grafito no-underline transition-shadow duration-150 hover:shadow-[0_6px_18px] hover:shadow-marino/12"
           >
             <span class="min-w-[88px] flex-none font-display text-[48px] leading-[0.9] font-extrabold text-marino">

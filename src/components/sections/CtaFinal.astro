@@ -6,8 +6,8 @@
  *   `site.ts` (`wa.mayoreo`).
  * - "Ver opciones de pedido" baja a las tarjetas por tonelaje (`#pedido`).
  *
- * Analytics (issue #12): el WhatsApp lleva `data-track="click_whatsapp"` y
- * `data-ubicacion="cta_final"`.
+ * Analytics (issue #12): el WhatsApp lleva `click_whatsapp` con
+ * `ubicacion="cta_final"` (atributos de `track()`).
  *
  * El titular va con interlineado 1.05 en lugar del 0.92 del diseño: con 0.92 el
  * gancho del «¿» toca la «N» del renglón de abajo y se lee «ÑECESITAS».
@@ -16,6 +16,7 @@
  * (flex-wrap con las bases del diseño: 480px y 280px).
  */
 import { ui, wa } from "../../data/site";
+import { track } from "../../lib/analytics";
 import Button from "../Button.astro";
 ---
 
@@ -41,8 +42,7 @@ import Button from "../Button.astro";
         block
         external
         href={wa.mayoreo}
-        data-track="click_whatsapp"
-        data-ubicacion="cta_final"
+        {...track("click_whatsapp", { ubicacion: "cta_final" })}
       >
         {ui.cotizarWhatsApp}
       </Button>
