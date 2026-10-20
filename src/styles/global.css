@@ -36,6 +36,7 @@
 
   /* WhatsApp: siempre en verde con su logo */
   --color-whatsapp: #138544;
+  --color-whatsapp-hover: #0f6e38; /* más oscuro: el texto blanco sube de contraste en hover */
 
   /* Resaltado de datos por confirmar con el cliente ("[confirmar]", "[zonas]") */
   --color-pendiente: #ffe7a3;

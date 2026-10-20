@@ -38,7 +38,7 @@ const enInicio = Astro.url.pathname === "/";
 const inicio = enInicio ? "#inicio" : "/";
 // Botón redondo de WhatsApp (44px): header móvil y escritorio compacto.
 const claseWhatsAppRedondo =
-  "flex size-11 shrink-0 items-center justify-center rounded-full bg-whatsapp text-white transition-[filter] duration-150 hover:brightness-110";
+  "flex size-11 shrink-0 items-center justify-center rounded-full bg-whatsapp text-white transition-colors duration-150 hover:bg-whatsapp-hover";
 // Hamburguesa (44px). La comparten el botón y su respaldo sin JS.
 const claseBotonMenu =
   "flex size-11 items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino";
@@ -237,8 +237,9 @@ const links = menu.map(({ label, href }) => ({
 
     boton.addEventListener("click", () => cambiar(!estaAbierto()));
 
-    // Al tocar un link (anchor o WhatsApp) se cierra.
-    panel.addEventListener("click", (evento) => {
+    // Al tocar cualquier link del header (los del panel, el logo o el botón
+    // redondo de WhatsApp) se cierra.
+    header.addEventListener("click", (evento) => {
       if (evento.target instanceof Element && evento.target.closest("a")) {
         cambiar(false);
       }

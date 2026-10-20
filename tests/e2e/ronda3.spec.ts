@@ -415,21 +415,19 @@ test.describe("Contraste de los botones y textos del header y footer", () => {
     }
   });
 
-  // Problema conocido (ronda 3): el hover del botón verde aplica
-  // `brightness(1.1)` y el texto blanco de 15px queda en ~4.0:1 sobre el
-  // verde aclarado (AA pide 4.5:1 para texto normal). Cuando se corrija,
-  // esta prueba empezará a pasar y Playwright avisará: quita `test.fail`.
+  // El hover del botón verde oscurece el fondo (whatsapp-hover) en lugar de
+  // aclararlo, para que el texto blanco de 15px no baje de 4.5:1.
   test("en hover, el botón verde de texto sigue en 4.5:1", async ({ page }) => {
-    test.fail();
     await page.setViewportSize(ESCRITORIO);
     await page.goto("/");
     const selector =
       "nav[aria-label='Principal'] a[href*='wa.me'] >> visible=true";
+    const enReposo = (await coloresDe(page, selector)).fondo;
     await page.locator(selector).hover();
     await expect
-      .poll(async () => (await coloresDe(page, selector)).filtro)
-      .not.toBe("none");
-    // Deja terminar la transición del filtro (150ms).
+      .poll(async () => (await coloresDe(page, selector)).fondo)
+      .not.toBe(enReposo);
+    // Deja terminar la transición (150ms).
     await page.waitForTimeout(300);
     const { texto, fondo, filtro } = await coloresDe(page, selector);
     expect(

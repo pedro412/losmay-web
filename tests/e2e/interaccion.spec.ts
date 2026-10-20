@@ -151,6 +151,14 @@ test.describe("Menú móvil · casos extra", () => {
     await expect(panel(page)).toBeHidden();
   });
 
+  test("tocar el logo del header cierra el menú", async ({ page }) => {
+    await page.goto("/");
+    await botonMenu(page).click();
+    await page.locator("#barra-movil a[href*='#inicio']").first().click();
+    await expect(panel(page)).toBeHidden();
+    await expect(botonMenu(page)).toHaveAttribute("aria-expanded", "false");
+  });
+
   test("aria-controls apunta al panel y el panel cerrado queda fuera del árbol accesible", async ({
     page,
   }) => {
