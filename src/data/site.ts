@@ -192,9 +192,25 @@ export interface Horario {
   cierra: string | null;
 }
 
+/** Domicilio de una sucursal, por partes (para los datos estructurados). */
+export interface Domicilio {
+  /** Calle y número: `"Corregidora 8"`. */
+  calle: string;
+  colonia: string;
+  /** Código postal. */
+  cp: string;
+}
+
+/** Coordenadas de una sucursal, en grados decimales. */
+export interface Coordenadas {
+  lat: number;
+  lng: number;
+}
+
 export interface Sucursal {
   id: string;
   nombre: string;
+  domicilio: Domicilio;
   /** Dirección completa, como se muestra en la tarjeta. */
   direccion: string;
   /** Dirección corta del footer (sin ciudad). */
@@ -204,7 +220,29 @@ export interface Sucursal {
   /** Teléfono como se muestra (`938 108 2953`). */
   telefono: string;
   horarios: readonly Horario[];
+  /**
+   * Ubicación del pin, para el `geo` del JSON-LD (SEO local). `null` mientras
+   * no esté confirmada: el JSON-LD la omite (es recomendada, no obligatoria).
+   */
+  geo: Coordenadas | null;
 }
+
+/**
+ * Arma una sucursal a partir de su domicilio. Las tres versiones de la
+ * dirección (tarjeta, footer y búsqueda de Maps) salen de las mismas partes,
+ * para que no se desalineen.
+ */
+const sucursal = (
+  datos: Omit<Sucursal, "direccion" | "direccionCorta" | "mapsQuery">,
+): Sucursal => {
+  const { calle, colonia, cp } = datos.domicilio;
+  return {
+    ...datos,
+    direccion: `${calle}, ${colonia}, ${cp} Cd. del Carmen, Camp.`,
+    direccionCorta: `${calle}, ${colonia}, ${cp}`,
+    mapsQuery: `${calle}, ${colonia}, ${cp} ${negocio.ciudad}, ${negocio.estado}`,
+  };
+};
 
 const LUNES_A_VIERNES: readonly Dia[] = [
   "Monday",
@@ -215,15 +253,17 @@ const LUNES_A_VIERNES: readonly Dia[] = [
 ];
 
 // TODO(cliente): validar direcciones, teléfonos y horarios de las dos
-// sucursales (issue #15).
+// sucursales (issue #15). Deben coincidir con sus perfiles de Google Business:
+// Google compara estos datos (también los del JSON-LD) con los del perfil.
 export const sucursales: readonly Sucursal[] = [
-  {
+  sucursal({
     id: "santa-rosalia",
     nombre: "Santa Rosalía",
-    direccion: "Corregidora 8, Santa Rosalía, 24197 Cd. del Carmen, Camp.",
-    direccionCorta: "Corregidora 8, Santa Rosalía, 24197",
-    mapsQuery:
-      "Corregidora 8, Santa Rosalía, 24197 Ciudad del Carmen, Campeche",
+    domicilio: {
+      calle: "Corregidora 8",
+      colonia: "Santa Rosalía",
+      cp: "24197",
+    },
     telefono: "938 108 2953",
     horarios: [
       {
@@ -240,14 +280,19 @@ export const sucursales: readonly Sucursal[] = [
       },
       { etiqueta: "Domingo", dias: ["Sunday"], abre: "08:00", cierra: "13:00" },
     ],
-  },
-  {
+    // TODO(cliente): coordenadas del pin de la sucursal en su perfil de Google
+    // Business (issue #11). No se calculan a mano para no publicar un punto
+    // equivocado.
+    geo: null,
+  }),
+  sucursal({
     id: "santa-isabel",
     nombre: "Santa Isabel",
-    direccion: "Av. Puerto de Campeche, Volcanes, 24150 Cd. del Carmen, Camp.",
-    direccionCorta: "Av. Puerto de Campeche, Volcanes, 24150",
-    mapsQuery:
-      "Av. Puerto de Campeche, Volcanes, 24150 Ciudad del Carmen, Campeche",
+    domicilio: {
+      calle: "Av. Puerto de Campeche",
+      colonia: "Volcanes",
+      cp: "24150",
+    },
     telefono: "938 132 6244",
     horarios: [
       {
@@ -264,7 +309,9 @@ export const sucursales: readonly Sucursal[] = [
       },
       { etiqueta: "Domingo", dias: ["Sunday"], abre: null, cierra: null },
     ],
-  },
+    // TODO(cliente): coordenadas del pin en Google Business (issue #11).
+    geo: null,
+  }),
 ];
 
 const numerosEnLetra = [
@@ -534,3 +581,44 @@ export const faq: readonly Pregunta[] = [
       "Sí. Dinos el total de tu obra y acordamos entregas según el avance.",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* SEO y redes                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Metadatos de la landing: `<title>`, `meta description`, Open Graph y
+ * Twitter card (ver `src/components/Seo.astro`).
+ *
+ * La descripción solo repite lo que ya dice la página (mínimo de mayoreo,
+ * entrega en obra, sucursales); Google la muestra bajo el título y WhatsApp
+ * debajo de la imagen al compartir el link.
+ */
+export const seo = {
+  titulo: "Cemento Holcim por mayoreo en Ciudad del Carmen | Los May",
+  descripcion: `Cemento Holcim por mayoreo desde ${minimoMayoreo} toneladas, con entrega en obra en ${negocio.ciudad}. Distribuidor autorizado Holcim con ${sucursalesEnLetra}. Cotiza por WhatsApp.`,
+  /** Idioma de Open Graph. */
+  locale: "es_MX",
+  /**
+   * Imagen para compartir (1200 × 630), basada en el post de campaña del
+   * diseño (docs/design/Post.dc.html). Se regenera con `npm run og`.
+   */
+  imagen: {
+    src: "/og.jpg",
+    ancho: 1200,
+    alto: 630,
+    alt: `Cemento Holcim por mayoreo desde ${minimoMayoreo} t con Los May: pedido por WhatsApp y entrega en tu obra en ${negocio.ciudad}.`,
+  },
+  /**
+   * Rutas que no se indexan: llevan `<meta name="robots" content="noindex">`
+   * y se quedan fuera del sitemap. Sin la diagonal final.
+   *
+   * El aviso de privacidad (issue #13) es un borrador pendiente de aprobación
+   * del cliente: se quita de aquí cuando lo apruebe.
+   */
+  rutasSinIndexar: ["/aviso-de-privacidad"] as readonly string[],
+} as const;
+
+/** `true` si la ruta (`/aviso-de-privacidad/`, con o sin diagonal) no se indexa. */
+export const sinIndexar = (ruta: string): boolean =>
+  seo.rutasSinIndexar.includes(ruta.replace(/(.)\/+$/, "$1"));
