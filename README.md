@@ -54,10 +54,20 @@ docs/design/           diseño de referencia
 
 ## Sistema visual
 
-- **Tokens** en `src/styles/global.css` (`@theme`). Solo existen los colores de marca (la paleta por defecto de Tailwind está desactivada): `marino`, `marino-900`, `marino-line`, `marino-200`, `marino-100`, `rojo`, `rojo-700`, `rojo-400`, `concreto`, `grafito`, `acero`, `acero-600`, `borde`, `borde-suave`, `whatsapp`, y `pendiente` / `pendiente-texto` para resaltar datos por confirmar.
+- **Tokens** en `src/styles/global.css` (`@theme`). Solo existen los colores de marca (la paleta por defecto de Tailwind está desactivada): `marino`, `marino-900`, `marino-line`, `marino-200`, `marino-100`, `marino-300`, `marino-700`, `rojo`, `rojo-700`, `rojo-400`, `concreto`, `grafito`, `acero`, `acero-600`, `borde`, `borde-suave`, `borde-tenue`, `whatsapp`, y `pendiente` / `pendiente-texto` para resaltar datos por confirmar.
 - **Tipografía** self-hosted con la API de fuentes de Astro (`astro.config.mjs`) desde los paquetes de Fontsource: `font-display` (Barlow Condensed 600/700/800) y `font-sans` (Barlow 400/500/600/700). Se precarga la Condensed 800.
 - **Utilidades**: `eyebrow`, `display-heading`, `text-section` / `text-hero` / `text-cta`, `section-pad`, `page-gutter` y `page-container`.
+- **Breakpoint**: el diseño tiene uno solo, 760px, y `md:` está redefinido a ese valor (`--breakpoint-md`).
 - **Componentes**: `Button` (variantes `whatsapp`, `rojo`, `marino`, `outline-claro`, `outline-marino`) y `SectionHeading` (eyebrow + h2, tonos `claro`, `concreto` y `marino`).
+
+## Layout
+
+`src/layouts/BaseLayout.astro` arma todas las páginas: `<html lang="es-MX">`, `theme-color`, fuentes, skip link "Saltar al contenido", topbar, header, `<main id="contenido">` y footer. Los metadatos de SEO entran por el slot `head` (`<Fragment slot="head">…</Fragment>`).
+
+- **Header** (`src/components/Header.astro`): sticky. Bajo 760px muestra logo, WhatsApp redondo y hamburguesa; desde 760px, logo, los 5 links y el botón de WhatsApp. Entre 760 y 1023px la fila del diseño no cabe, así que el botón de WhatsApp se reduce al redondo de 44px y los espacios se compactan. El cambio es solo CSS.
+- **Menú móvil**: el único JS de la página (`<script>` en `Header.astro`). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio.
+- **Anchors**: `scroll-behavior: smooth` (si no hay `prefers-reduced-motion`) y `scroll-margin-top: var(--altura-header)` en todo `id` dentro de `<main>`, para que el header no tape el inicio de la sección. Si cambia la altura del header, actualiza `--altura-header` en `global.css`.
+- **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). El link al aviso de privacidad apunta a `/aviso-de-privacidad` (la página llega en el issue #13).
 
 ## Assets
 
