@@ -1,0 +1,87 @@
+---
+/**
+ * Sucursales (`#sucursales`, fondo blanco): una tarjeta concreto por
+ * sucursal con nombre, dirección con pin, horarios en `<dl>` y dos botones:
+ * llamar (`tel:`, marino, muestra el teléfono) y "Cómo llegar" (Google Maps
+ * en otra pestaña, outline marino).
+ *
+ * Todo sale de `sucursales` en src/data/site.ts (direcciones, teléfonos y
+ * horarios por validar con el cliente: TODO(cliente) ahí, issue #15).
+ *
+ * La cuadrícula es `auto-fit, minmax(300px, 1fr)` como en el diseño, con
+ * `min(300px, 100%)` para que en pantallas de 320px la tarjeta no desborde.
+ * Los botones no llevan el padding horizontal de `<Button>` (el diseño los
+ * reparte 50/50 sin padding), para que el teléfono quepa en un renglón en
+ * móvil.
+ */
+import { formatoHorario, mapsLink, sucursales, telLink } from "../../data/site";
+import Button from "../Button.astro";
+import Icon from "../Icon.astro";
+import SectionHeading from "../SectionHeading.astro";
+---
+
+<section
+  id="sucursales"
+  aria-labelledby="sucursales-titulo"
+  class="border-b border-borde-suave bg-white section-pad"
+>
+  <div class="page-container">
+    <SectionHeading
+      eyebrow="Sucursales"
+      title="Dos sucursales en Carmen."
+      id="sucursales-titulo"
+    />
+
+    <ul
+      role="list"
+      class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-3"
+    >
+      {sucursales.map((sucursal) => (
+        <li class="flex flex-col gap-4 rounded-[20px] bg-concreto p-6">
+          <h3 class="m-0 display-heading text-[32px] leading-none text-marino">
+            {sucursal.nombre}
+          </h3>
+
+          <p class="m-0 flex items-start gap-2.5 text-base text-grafito">
+            <Icon name="pin" size={20} class="mt-0.5 text-rojo" />
+            <span>{sucursal.direccion}</span>
+          </p>
+
+          <dl class="m-0 flex flex-col gap-1.5 rounded-xl bg-white px-4 py-3.5 text-[15px]">
+            {sucursal.horarios.map((horario) => (
+              <div class="flex justify-between gap-3">
+                <dt class="text-acero">{horario.etiqueta}</dt>
+                <dd class="m-0 font-bold">{formatoHorario(horario)}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div class="flex gap-2">
+            <Button
+              href={telLink(sucursal.telefono)}
+              variant="marino"
+              size="md"
+              shape="lg"
+              aria-label={`Llamar a ${sucursal.nombre}: ${sucursal.telefono}`}
+              class="flex-1 px-2! text-[17px]!"
+            >
+              <Icon name="telefono" size={18} />
+              {sucursal.telefono}
+            </Button>
+            <Button
+              href={mapsLink(sucursal.mapsQuery)}
+              variant="outline-marino"
+              size="md"
+              shape="lg"
+              external
+              aria-label={`Cómo llegar a ${sucursal.nombre} (abre Google Maps)`}
+              class="flex-1 px-2! text-[17px]!"
+            >
+              Cómo llegar
+            </Button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
