@@ -23,8 +23,8 @@ import Logo from "./Logo.astro";
 // Año de la compilación: se actualiza con cada deploy.
 const anio = new Date().getFullYear();
 
-// El link al aviso de privacidad solo se muestra cuando la página existe
-// (llega con el issue #13), para no publicar un link roto antes.
+// El link al aviso de privacidad (issue #13) solo se muestra si la página
+// existe, para no publicar nunca un link roto.
 const hayAvisoPrivacidad =
   Object.keys(import.meta.glob("../pages/aviso-de-privacidad.{astro,md,mdx}"))
     .length > 0;

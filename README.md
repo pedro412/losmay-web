@@ -69,10 +69,11 @@ docs/design/           diseño de referencia
 `src/layouts/BaseLayout.astro` arma todas las páginas: `<html lang="es-MX">`, `theme-color`, fuentes, skip link "Saltar al contenido", topbar, header, `<main id="contenido">` y footer. Los metadatos de SEO los pone `<Seo>` (ver [SEO](#seo)); para otras etiquetas del `<head>` está el slot `head` (`<Fragment slot="head">…</Fragment>`).
 
 - **Header** (`src/components/Header.astro`): sticky. Bajo 760px muestra logo, WhatsApp redondo y hamburguesa; desde 760px, logo, los 5 links y el botón de WhatsApp. Entre 760 y 1023px la fila del diseño no cabe, así que el botón de WhatsApp se reduce al redondo de 44px y los espacios se compactan. El cambio es solo CSS.
+- **Header simplificado** (`<BaseLayout headerSimple>`, prop `simple` de `Header`): para páginas fuera de la landing, como el aviso de privacidad. Solo el logo (lleva a `/`) y el botón de WhatsApp, sin links a las secciones ni hamburguesa. Mide lo mismo que el completo.
 - **Menú móvil**: el único JS propio de la página (`<script>` en `Header.astro`; en producción se suma el de GA4, ver [Analytics](#analytics-ga4)). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio. Al abrirse limita el alto del panel al espacio que queda bajo el header, para que en pantallas bajas el botón de WhatsApp se alcance completo.
 - **Menú móvil sin JavaScript**: con `@media (scripting: none)` el botón se cambia por dos links, «Abrir menú» (`#menu-movil`, que se muestra con `:target`) y «Cerrar menú» (`#barra-movil`). Tocar un link del menú también lo cierra.
 - **Anchors**: `scroll-behavior: smooth` (si no hay `prefers-reduced-motion`) y `scroll-margin-top: var(--altura-header)` en todo `id` dentro de `<main>`, para que el header no tape el inicio de la sección. Si cambia la altura del header, actualiza `--altura-header` en `global.css`.
-- **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). El link al aviso de privacidad (`/aviso-de-privacidad`) solo se muestra cuando existe `src/pages/aviso-de-privacidad.astro` (llega en el issue #13), para no publicar un link roto. Los links miden 44px de alto y el foco se ve en blanco sobre el marino (`foco-sobre-marino` en `global.css`).
+- **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). La línea legal enlaza al [aviso de privacidad](#aviso-de-privacidad) (`/aviso-de-privacidad`); el link solo se pinta si existe `src/pages/aviso-de-privacidad.astro`, para no publicar nunca un link roto. Los links miden 44px de alto y el foco se ve en blanco sobre el marino (`foco-sobre-marino` en `global.css`).
 
 ## Assets
 
@@ -185,7 +186,27 @@ El [Campaign URL Builder](https://ga-dev-tools.google/campaign-url-builder/) arm
 - [ ] Recomendado: retención de datos en 14 meses (Administrar → Recopilación y conservación de datos).
 - [ ] Si se agrega una Content-Security-Policy, permitir `https://www.googletagmanager.com` en `script-src` y `https://*.google-analytics.com` y `https://*.analytics.google.com` en `connect-src`.
 
-El aviso de privacidad (issue #13) debe mencionar las cookies e identificadores de Google Analytics.
+El [aviso de privacidad](#aviso-de-privacidad) explica las cookies e identificadores de Google Analytics. Si se agrega un evento o se cambia qué se mide, revisa que el aviso lo siga cubriendo.
+
+## Aviso de privacidad
+
+`/aviso-de-privacidad` (issue [#13](https://github.com/pedro412/losmay-web/issues/13)), en `src/pages/aviso-de-privacidad.astro` con el mismo layout, el header simplificado y el footer. El texto vive en `avisoPrivacidad` de `src/data/site.ts`: secciones con párrafos y listas (los links externos van como `{ texto, href }`).
+
+El texto es un **borrador** nuestro conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares: responsable, datos que se tratan (los que el cliente manda por WhatsApp o por teléfono, y las cookies e identificadores de Google Analytics), finalidades necesarias y secundarias, cookies y cómo desactivarlas, remisiones a Google y Vercel, derechos ARCO, revocación del consentimiento y cambios al aviso. Mientras no lo aprueben Los May o su asesor legal:
+
+- La página muestra arriba el recuadro «Borrador pendiente de aprobación».
+- Lleva `noindex` y no sale en el sitemap (`seo.rutasSinIndexar`).
+- Razón social, domicilio fiscal, contacto de privacidad y fecha de actualización van entre corchetes, resaltados en amarillo, con `// TODO(cliente)`.
+
+**Banner de cookies: no se pone.** En México la ley no exige un consentimiento previo para cookies de medición como en la Unión Europea; basta con informarlo en el aviso de privacidad, enlazado desde el footer de todas las páginas. Si el asesor legal pide además una leyenda visible sobre las cookies, se puede agregar una barra informativa (sin bloquear GA).
+
+### Pendiente (cliente)
+
+- [ ] Revisión y aprobación del texto por Los May o su asesor legal (criterio de aceptación del #13).
+- [ ] Razón social y domicilio fiscal del responsable.
+- [ ] Correo o teléfono de contacto para privacidad y solicitudes ARCO.
+- [ ] Confirmar si se mandan promociones por WhatsApp o teléfono (finalidad secundaria; si no, se quita).
+- [ ] Al aprobarlo: llenar los corchetes y la fecha, poner `borrador: null` en `avisoPrivacidad` y quitar `/aviso-de-privacidad` de `seo.rutasSinIndexar` (vuelve a indexarse y a salir en el sitemap).
 
 ## Diseño
 
