@@ -1,0 +1,46 @@
+---
+/**
+ * Foto del producto: bulto de Holcim Apasco ECOPlanet de 25 kg sobre tarima.
+ * En el hero se recorta a 4:5 con `object-position: center 35%`, como en el
+ * diseño. Sale en AVIF y WebP (con JPG de respaldo) y varios anchos.
+ *
+ * TODO(cliente): pedir la foto original en alta resolución (la del diseño es
+ * de 1536 × 2048 y ya viene comprimida) (issue #15).
+ */
+import { Picture } from "astro:assets";
+import productPhoto from "../assets/images/cemento-holcim-ecoplanet-25kg.jpg";
+
+interface Props {
+  /** Ancho en pantalla para elegir la variante (atributo `sizes`). */
+  sizes?: string;
+  /** `eager` + `high` cuando es la imagen principal (LCP) del hero. */
+  loading?: "eager" | "lazy";
+  fetchpriority?: "high" | "low" | "auto";
+  class?: string;
+}
+
+const {
+  // Columna derecha del hero: ~45% del contenedor de 1280 px en escritorio y
+  // todo el ancho menos el gutter en móvil.
+  sizes = "(min-width: 1360px) 600px, (min-width: 760px) 45vw, calc(100vw - 40px)",
+  loading = "lazy",
+  fetchpriority = "auto",
+  class: className,
+} = Astro.props;
+---
+
+<Picture
+  src={productPhoto}
+  alt="Bulto de cemento Holcim Apasco ECOPlanet de 25 kg sobre una tarima"
+  formats={["avif", "webp"]}
+  widths={[400, 600, 800, 1000, 1200, 1536]}
+  sizes={sizes}
+  quality={72}
+  loading={loading}
+  decoding={loading === "eager" ? "sync" : "async"}
+  fetchpriority={fetchpriority}
+  class:list={[
+    "block aspect-[4/5] w-full rounded-2xl object-cover object-[center_35%]",
+    className,
+  ]}
+/>
