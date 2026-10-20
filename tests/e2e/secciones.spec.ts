@@ -278,7 +278,9 @@ test.describe("Hero (#6)", () => {
       await expect(h1).toHaveCSS("text-transform", "uppercase");
       await expect(h1).toHaveCSS("color", C.blanco);
       const franja = h1.locator("span", { hasText: "Los May." });
-      await expect(franja).toHaveCSS("background-color", C.rojo);
+      // La franja es un degradado recortado (utilidad franja-roja), no un
+      // fondo plano: ver "Hero · franja roja del titular".
+      expect(await css(franja, "background-image")).toContain(C.rojo);
       expect(await css(franja, "box-decoration-break")).toBe("clone");
       const pad = parseFloat(await css(franja, "padding-left"));
       expect(pad / parseFloat(await css(h1, "font-size"))).toBeCloseTo(0.12, 2);
@@ -1572,4 +1574,37 @@ test("listas sin viñetas conservan role=list (Safari/VoiceOver)", async ({
       .map((l) => l.closest("section")?.id || l.className),
   );
   expect(sinRol).toEqual([]);
+});
+
+test.describe("Hero · franja roja del titular", () => {
+  // Con line-height 0.9, un fondo inline normal cubre ~1.2em y tapaba la
+  // parte baja de "CONSTRUYE". La franja debe empezar dentro del renglón de
+  // "Los May.", nunca encima del anterior.
+  for (const width of [320, 390, 768, 1440]) {
+    test(`no invade el renglón anterior a ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const medida = await page
+        .locator("#hero-titulo .franja-roja")
+        .evaluate((el) => {
+          const estilo = getComputedStyle(el);
+          const em = parseFloat(estilo.fontSize);
+          const alto = parseFloat(
+            getComputedStyle(el.parentElement!).lineHeight,
+          );
+          const primera = el.getClientRects()[0];
+          // Tope de la caja de línea del renglón de la franja.
+          const topeLinea = primera.top + (primera.height - alto) / 2;
+          const topeFranja = primera.top + 0.2 * em;
+          return {
+            fondoPlano: estilo.backgroundColor,
+            degradado: estilo.backgroundImage,
+            margen: topeFranja - topeLinea,
+          };
+        });
+      expect(medida.fondoPlano).toBe("rgba(0, 0, 0, 0)");
+      expect(medida.degradado).toContain("linear-gradient");
+      expect(medida.margen).toBeGreaterThanOrEqual(0);
+    });
+  }
 });

@@ -140,6 +140,24 @@
 }
 
 /* Etiqueta pequeña sobre los titulares de sección. El color lo pone cada uso. */
+/*
+ * Franja roja detrás de un texto del titular ("Los May." en el hero).
+ * Con line-height 0.9, el fondo de un inline cubre todo el área de la fuente
+ * (~1.2em) y tapaba la parte baja del renglón anterior. El degradado recorta
+ * esa franja a la banda de las mayúsculas, con el mismo aire arriba y abajo.
+ */
+@utility franja-roja {
+  background-image: linear-gradient(
+    transparent 0.2em,
+    var(--color-rojo) 0.2em,
+    var(--color-rojo) 1.1em,
+    transparent 1.1em
+  );
+  padding-inline: 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 @utility eyebrow {
   margin: 0;
   font-size: 13px;

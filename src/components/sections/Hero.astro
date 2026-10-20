@@ -3,8 +3,8 @@
  * Hero de la landing (docs/design/Main.dc.html, issue #6), sobre marino.
  *
  * - Columna izquierda (base 520px): eyebrow con el cuadrito rojo, h1 con
- *   "Los May." sobre la franja roja (`box-decoration-break: clone`, para que
- *   cada renglón lleve su franja completa si se parte), párrafo, CTAs
+ *   "Los May." sobre la franja roja (utilidad `franja-roja`: recortada para no
+ *   tapar el renglón anterior y con `box-decoration-break: clone`), párrafo, CTAs
  *   (WhatsApp con el mensaje general y "Ver sucursales") y sello de Holcim.
  * - Columna derecha (base 340px): foto del producto en 4:5 con la card blanca
  *   de la campaña de mayoreo encima.
@@ -61,8 +61,7 @@ const sizesFoto =
         id="hero-titulo"
         class="mt-4 mb-0 display-heading text-hero tracking-[-0.005em]"
       >
-        Construye con{" "}
-        <span class="bg-rojo px-[0.12em] box-decoration-clone">Los May.</span>
+        Construye con <span class="franja-roja">Los May.</span>
       </h1>
 
       <p class="mt-5 mb-0 max-w-[540px] text-[clamp(17px,1.5cqi,20px)] leading-[1.55] text-marino-100">
