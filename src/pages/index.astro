@@ -2,8 +2,14 @@
 /**
  * Landing de Los May. Las secciones van en el orden de
  * docs/design/Main.dc.html. El ancla `#inicio` la pone BaseLayout.
+ *
+ * Título, descripción e imagen para compartir: `seo` en `site.ts`. JSON-LD:
+ * sucursales (`HardwareStore`) y preguntas frecuentes (`FAQPage`).
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { faq } from "../data/site";
+import { faqJsonLd } from "../lib/faq-jsonld";
+import { negocioJsonLd } from "../lib/jsonld";
 import Hero from "../components/sections/Hero.astro";
 import ParaQuien from "../components/sections/ParaQuien.astro";
 import Pedido from "../components/sections/Pedido.astro";
@@ -15,7 +21,7 @@ import Faq from "../components/sections/Faq.astro";
 import CtaFinal from "../components/sections/CtaFinal.astro";
 ---
 
-<BaseLayout>
+<BaseLayout jsonLd={[negocioJsonLd(), faqJsonLd(faq)]}>
   <Hero />
   <ParaQuien />
   <Pedido />

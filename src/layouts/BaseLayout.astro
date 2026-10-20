@@ -3,28 +3,35 @@
  * Layout base de todas las páginas: `<head>` común, skip link, topbar, header
  * sticky, `<main id="contenido">` y footer.
  *
- * Los metadatos de SEO (description, canonical, Open Graph, JSON-LD) entran
- * por el slot `head`:
+ * Los metadatos de SEO (description, canonical, robots, Open Graph, Twitter
+ * card y JSON-LD) los pone `<Seo>` con los valores de `seo` en `site.ts`; cada
+ * página puede cambiar título, descripción y JSON-LD por props:
  *
- * <BaseLayout title="…">
- *   <Fragment slot="head">
- *     <meta name="description" content="…" />
- *   </Fragment>
+ * <BaseLayout title="…" description="…" jsonLd={[…]}>
  *   …secciones…
  * </BaseLayout>
+ *
+ * Para cualquier otra etiqueta del `<head>` queda el slot `head`
+ * (`<Fragment slot="head">…</Fragment>`).
  */
 import { Font } from "astro:assets";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import Seo from "../components/Seo.astro";
 import Topbar from "../components/Topbar.astro";
-import { colorMarca, ui } from "../data/site";
+import { colorMarca, seo, ui } from "../data/site";
 import "../styles/global.css";
 
 interface Props {
   title?: string;
+  description?: string;
+  /** Fuerza `noindex` (ver `seo.rutasSinIndexar` en `site.ts`). */
+  noindex?: boolean;
+  /** Bloques de JSON-LD para el `<head>`. */
+  jsonLd?: readonly (object | null)[];
 }
 
-const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
+const { title = seo.titulo, description, noindex, jsonLd } = Astro.props;
 ---
 
 <!doctype html>
@@ -39,6 +46,12 @@ const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <Seo
+      title={title}
+      description={description}
+      noindex={noindex}
+      jsonLd={jsonLd}
+    />
     <!-- Fuentes self-hosted. Se precarga la Condensed 800 de los titulares (LCP). -->
     <Font cssVariable="--font-barlow-condensed" preload={[{ weight: 800 }]} />
     <Font cssVariable="--font-barlow" />

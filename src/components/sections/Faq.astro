@@ -11,16 +11,12 @@
  * en amarillo los tramos entre corchetes, como en el diseño.
  * TODO(cliente): zonas, CFDI, formas de pago y crédito (issue #15).
  *
- * También emite el JSON-LD `FAQPage` (solo con las respuestas confirmadas,
- * ver `src/lib/faq-jsonld.ts`). JSON-LD dentro del `<body>` es válido para
- * Google; el issue de SEO (#11) puede moverlo al `<head>` con el mismo helper.
+ * El JSON-LD `FAQPage` sale de la misma lista y va en el `<head>` (ver
+ * `src/pages/index.astro` y `src/lib/faq-jsonld.ts`).
  */
 import { faq } from "../../data/site";
-import { faqJsonLd, serializarJsonLd } from "../../lib/faq-jsonld";
 import SectionHeading from "../SectionHeading.astro";
 import Texto from "../Texto.astro";
-
-const jsonLd = faqJsonLd(faq);
 ---
 
 <section
@@ -55,12 +51,4 @@ const jsonLd = faqJsonLd(faq);
       ))}
     </div>
   </div>
-
-  {jsonLd && (
-    <script
-      type="application/ld+json"
-      is:inline
-      set:html={serializarJsonLd(jsonLd)}
-    />
-  )}
 </section>
