@@ -51,6 +51,13 @@ src/
 docs/design/           diseño de referencia
 ```
 
+## Sistema visual
+
+- **Tokens** en `src/styles/global.css` (`@theme`). Solo existen los colores de marca (la paleta por defecto de Tailwind está desactivada): `marino`, `marino-900`, `marino-line`, `marino-200`, `marino-100`, `rojo`, `rojo-700`, `rojo-400`, `concreto`, `grafito`, `acero`, `acero-600`, `borde`, `borde-suave`, `whatsapp`, y `pendiente` / `pendiente-texto` para resaltar datos por confirmar.
+- **Tipografía** self-hosted con la API de fuentes de Astro (`astro.config.mjs`) desde los paquetes de Fontsource: `font-display` (Barlow Condensed 600/700/800) y `font-sans` (Barlow 400/500/600/700). Se precarga la Condensed 800.
+- **Utilidades**: `eyebrow`, `display-heading`, `text-section` / `text-hero` / `text-cta`, `section-pad`, `page-gutter` y `page-container`.
+- **Componentes**: `Button` (variantes `whatsapp`, `rojo`, `marino`, `outline-claro`, `outline-marino`) y `SectionHeading` (eyebrow + h2, tonos `claro`, `concreto` y `marino`).
+
 ## Diseño
 
 El diseño de referencia está en [`docs/design/`](docs/design/README.md):
