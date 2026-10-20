@@ -72,6 +72,13 @@ docs/design/           diseño de referencia
 
 Pendientes del cliente (issue #15): archivo oficial y permiso de uso del logo de Holcim, y la foto del producto en alta resolución.
 
+## Contenido
+
+Todo el contenido editable vive en `src/data/site.ts`: número de WhatsApp y mensajes prellenados, tarjetas de pedido por tonelaje, sucursales (dirección, teléfono, query de Maps y horarios), menú, FAQ, "Para quién", pasos, beneficios, productos y la ficha del cemento. Ningún componente debe tener teléfonos, horarios ni textos de WhatsApp escritos a mano.
+
+- **Helpers**: `waLink(mensaje)`, `mapsLink(direccion)`, `telLink(numero)` y `formatoHorario(horario)`. `wa.general` y `wa.mayoreo` ya traen los links de los botones.
+- **Datos por confirmar**: van entre corchetes, como en el diseño (`"Fuera de la ciudad: [zonas]."`), con un `// TODO(cliente)` encima. El componente `<Texto texto={...} />` los resalta en amarillo (`partirPendientes` hace la separación).
+
 ## Diseño
 
 El diseño de referencia está en [`docs/design/`](docs/design/README.md):
