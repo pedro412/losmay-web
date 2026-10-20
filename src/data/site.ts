@@ -13,7 +13,7 @@
  * Los componentes los resaltan en amarillo con `<Texto>` (ver
  * `partirPendientes`). Lista completa en el issue #15.
  */
-import type { IconName } from "../components/Icon.astro";
+import type { IconName } from "../lib/iconos";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
