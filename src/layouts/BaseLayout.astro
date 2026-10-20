@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import "../styles/global.css";
 
 interface Props {
@@ -17,6 +18,9 @@ const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <!-- Fuentes self-hosted. Se precarga la Condensed 800 de los titulares (LCP). -->
+    <Font cssVariable="--font-barlow-condensed" preload={[{ weight: 800 }]} />
+    <Font cssVariable="--font-barlow" />
   </head>
   <body>
     <slot />
