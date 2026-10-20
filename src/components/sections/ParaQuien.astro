@@ -4,23 +4,30 @@
  *
  * Cuatro tarjetas con ícono sobre cuadro marino (`paraQuien` en site.ts).
  *
- * - Debajo de 1024px: carrusel horizontal con `scroll-snap`. Cada tarjeta
- *   mide `min(260px, 78%)`, como en el diseño, y el carril se sale hasta los
- *   bordes de la pantalla (`-mx-gutter` + `px-gutter`), así que la
- *   siguiente tarjeta asoma cortada en el borde derecho: es la pista de que
- *   hay más. El `scroll-padding` alinea cada tarjeta con el texto de la
- *   sección al hacer snap. El carril mide exactamente el ancho de la sección,
- *   así que la página no gana scroll horizontal.
- * - Desde 1024px (`lg:`): las 4 en fila, en una cuadrícula de 4 columnas (a
- *   1440px quedan de ~311px, igual que el `flex: 1 0 260px` del diseño).
- *   Entre 760 y 1023px las 4 no caben a 260px, por eso ahí sigue el
- *   carrusel. TODO(diseño): validar el carrusel en 760–1023px, que el diseño
- *   no define.
+ * El carril es el flex del diseño en todos los anchos: cada tarjeta es
+ * `flex: 1 0 min(260px, 78%)` con `overflow-x: auto` y `scroll-snap`.
  *
- * Las tarjetas no tienen nada enfocable, así que el carril lleva
- * `tabindex="0"` para poder desplazarlo con las flechas del teclado. Su
- * anillo de foco va por dentro en el carrusel, porque por fuera quedaría
- * fuera de la pantalla.
+ * - Mientras las 4 tarjetas de 260px no quepan (contenedor de menos de
+ *   4 × 260 + 3 × 12 = 1076px, o sea ventana de menos de ~1196px), es un
+ *   carrusel. El carril se sale hasta los bordes de la pantalla
+ *   (`-mx-gutter` + `px-gutter`), así que la siguiente tarjeta asoma cortada
+ *   en el borde derecho: es la pista de que hay más. El `scroll-padding`
+ *   alinea cada tarjeta con el texto de la sección al hacer snap. El carril
+ *   mide exactamente el ancho de la sección, así que la página no gana
+ *   scroll horizontal.
+ * - Cuando caben, las 4 quedan en fila y crecen hasta llenar el contenedor
+ *   (a 1440px, ~311px cada una). Así ninguna baja de 260px y el título más
+ *   largo («Desarrolladores», 180px) siempre cabe.
+ *
+ * Teclado y lector de pantalla: las tarjetas no tienen nada enfocable, así
+ * que el carril es una región con nombre propio («Tipos de cliente», distinto
+ * del titular de la sección) y `tabindex="0"` para desplazarlo con las
+ * flechas. El anillo de foco va por dentro, porque por fuera quedaría fuera
+ * de la pantalla. Desde ~1196px, donde las 4 caben y no hay nada que
+ * desplazar, el carril sigue siendo un paso de tabulación: quitarlo solo ahí
+ * pediría JS (el plan, issue #17, deja como único JS el menú y GA) y quitarlo
+ * siempre dejaría el carrusel sin teclado en Safari, que no hace enfocables
+ * los contenedores con scroll.
  */
 import Icon from "../Icon.astro";
 import SectionHeading from "../SectionHeading.astro";
@@ -45,12 +52,12 @@ const tituloId = "pq-titulo";
 
     <div
       role="region"
-      aria-labelledby={tituloId}
+      aria-label="Tipos de cliente"
       tabindex="0"
-      class="mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2 max-lg:-mx-gutter max-lg:scroll-px-gutter max-lg:px-gutter max-lg:focus-visible:-outline-offset-3 lg:grid lg:snap-none lg:grid-cols-4 lg:overflow-visible lg:pb-0"
+      class="-mx-gutter mt-8 flex snap-x snap-mandatory scroll-px-gutter gap-3 overflow-x-auto overscroll-x-contain px-gutter pb-2 focus-visible:-outline-offset-3"
     >
       {paraQuien.map(({ icono, titulo, texto }) => (
-        <article class="flex shrink-0 grow basis-[min(260px,78%)] snap-start flex-col gap-3 rounded-[14px] border border-borde p-6 lg:basis-auto">
+        <article class="flex shrink-0 grow basis-[min(260px,78%)] snap-start flex-col gap-3 rounded-[14px] border border-borde p-6">
           <div class="flex size-12 items-center justify-center rounded-xl bg-marino text-white">
             <Icon name={icono} size={24} strokeWidth={1.8} />
           </div>
