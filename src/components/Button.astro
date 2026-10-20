@@ -16,12 +16,16 @@ import WhatsAppIcon from "../assets/icons/whatsapp.svg";
  */
 type Variant =
   "whatsapp" | "rojo" | "marino" | "outline-claro" | "outline-marino";
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "compacto";
 type Shape = "md" | "lg" | "pill";
 
 type Props = {
   variant?: Variant;
-  /** sm: 44 px / 15 px · md: 48 px / 16 px · lg: 56 px / 17 px */
+  /**
+   * sm: 44 px / 15 px · md: 48 px / 16 px · lg: 56 px / 17 px ·
+   * compacto: 48 px / 17 px casi sin padding horizontal (botones repartidos
+   * en una fila angosta, como los de cada sucursal).
+   */
   size?: Size;
   /** md: radio 10 px · lg: radio 12 px · pill: totalmente redondo */
   shape?: Shape;
@@ -60,6 +64,7 @@ const sizes: Record<Size, string> = {
   sm: "min-h-11 px-[18px] text-[15px] gap-2",
   md: "min-h-12 px-5 text-base gap-2",
   lg: "min-h-14 px-6 text-[17px] gap-2.5",
+  compacto: "min-h-12 px-2 text-[17px] gap-2",
 };
 
 const shapes: Record<Shape, string> = {
