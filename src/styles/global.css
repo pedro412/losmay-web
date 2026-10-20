@@ -59,7 +59,8 @@
   --text-hero: clamp(60px, 8.6cqi, 132px);
   --text-hero--line-height: 0.9;
   --text-cta: clamp(40px, 5.6cqi, 80px);
-  --text-cta--line-height: 0.92;
+  /* El diseño trae 0.92, pero así el gancho del «¿» toca el renglón de abajo. */
+  --text-cta--line-height: 1.05;
 
   --container-page: 1280px;
 
