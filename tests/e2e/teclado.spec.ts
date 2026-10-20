@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ESCRITORIO, MOVIL } from "./helpers";
+import { ESCRITORIO, HAY_AVISO_PRIVACIDAD, MOVIL } from "./helpers";
 
 /** Recorre la página con Tab y devuelve lo que recibió el foco. */
 async function recorrerConTab(page: Page, maximo = 40) {
@@ -88,7 +88,7 @@ test.describe("Navegación con teclado", () => {
         expect.arrayContaining([
           "Santa Rosalía · 938 108 2953",
           "Santa Isabel · 938 132 6244",
-          "Aviso de privacidad",
+          ...(HAY_AVISO_PRIVACIDAD ? ["Aviso de privacidad"] : []),
         ]),
       );
 

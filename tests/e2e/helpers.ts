@@ -1,4 +1,15 @@
 import type { Page } from "@playwright/test";
+import { existsSync } from "node:fs";
+
+/**
+ * ¿Ya existe la página del aviso de privacidad (issue #13)? El footer solo
+ * muestra el link cuando existe, para no publicar un link roto.
+ */
+export const HAY_AVISO_PRIVACIDAD = ["astro", "md", "mdx"].some((ext) =>
+  existsSync(
+    new URL(`../../src/pages/aviso-de-privacidad.${ext}`, import.meta.url),
+  ),
+);
 
 /** Anchos en los que no debe haber scroll horizontal. */
 export const ANCHOS = [320, 360, 390, 768, 1024, 1440, 1920] as const;

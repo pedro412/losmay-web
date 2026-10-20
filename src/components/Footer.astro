@@ -2,15 +2,24 @@
 /**
  * Footer en marino-900: logo blanco con la descripción, sucursales y
  * contacto (`tel:`), y la línea legal con el link al aviso de privacidad.
+ *
+ * Los links miden 44px de alto (área táctil en móvil). En la línea legal el
+ * link compensa ese alto con márgenes negativos para no mover el layout.
  */
 import { legal, negocio, sucursales, telLink } from "../data/site";
 import Logo from "./Logo.astro";
 
 // Año de la compilación: se actualiza con cada deploy.
 const anio = new Date().getFullYear();
+
+// El link al aviso de privacidad solo se muestra cuando la página existe
+// (llega con el issue #13), para no publicar un link roto antes.
+const hayAvisoPrivacidad =
+  Object.keys(import.meta.glob("../pages/aviso-de-privacidad.{astro,md,mdx}"))
+    .length > 0;
 ---
 
-<footer class="bg-marino-900 pt-12 pb-7 text-[15px] text-marino-200 page-gutter">
+<footer class="foco-sobre-marino bg-marino-900 pt-12 pb-7 text-[15px] text-marino-200 page-gutter">
   <div class="flex flex-wrap justify-between gap-x-16 gap-y-8 page-container">
     <div class="flex-[1_1_260px]">
       <Logo variant="blanco" class="w-[180px]" />
@@ -35,10 +44,10 @@ const anio = new Date().getFullYear();
         Contacto
       </h2>
       {sucursales.map(({ nombre, telefono }) => (
-        <p class="m-0 mb-1">
+        <p class="m-0 first-of-type:-mt-2">
           <a
             href={telLink(telefono)}
-            class="inline-block py-0.5 text-white no-underline hover:underline"
+            class="inline-flex min-h-11 items-center text-white no-underline hover:underline"
           >
             {nombre} · {telefono}
           </a>
@@ -48,18 +57,22 @@ const anio = new Date().getFullYear();
     </div>
   </div>
 
-  <div class="mt-10 flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-marino-700 pt-5 text-[13px] text-marino-300 page-container">
+  <div class="mt-10 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-marino-700 pt-5 text-[13px] text-marino-300 page-container">
     <p class="m-0">
       {`© ${anio} ${negocio.nombre}`}
-      <span aria-hidden="true" class="mx-1.5">
-        ·
-      </span>
-      <a
-        href={legal.avisoPrivacidad.href}
-        class="inline-block py-0.5 text-marino-300 underline underline-offset-2 hover:text-white"
-      >
-        {legal.avisoPrivacidad.label}
-      </a>
+      {hayAvisoPrivacidad && (
+        <>
+          <span aria-hidden="true" class="mx-1.5">
+            ·
+          </span>
+          <a
+            href={legal.avisoPrivacidad.href}
+            class="-my-3 inline-flex min-h-11 items-center text-marino-300 underline underline-offset-2 hover:text-white"
+          >
+            {legal.avisoPrivacidad.label}
+          </a>
+        </>
+      )}
     </p>
     <p class="m-0">{legal.marcas}</p>
   </div>

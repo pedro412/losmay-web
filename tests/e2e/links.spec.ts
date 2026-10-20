@@ -8,6 +8,7 @@ import {
 } from "../../src/data/site";
 import {
   ESCRITORIO,
+  HAY_AVISO_PRIVACIDAD,
   leerWhatsApp,
   MENSAJE_GENERAL,
   MOVIL,
@@ -104,7 +105,7 @@ test.describe("Teléfonos y Maps", () => {
 });
 
 test.describe("Links internos", () => {
-  test("el aviso de privacidad del footer no da 404", async ({
+  test("el link al aviso de privacidad aparece solo si la página existe", async ({
     page,
     request,
   }) => {
@@ -112,8 +113,28 @@ test.describe("Links internos", () => {
     const link = page
       .getByRole("contentinfo")
       .getByRole("link", { name: "Aviso de privacidad" });
+    if (!HAY_AVISO_PRIVACIDAD) {
+      // La página llega con el issue #13; mientras, no hay link roto.
+      await expect(link).toHaveCount(0);
+      return;
+    }
     await expect(link).toHaveAttribute("href", "/aviso-de-privacidad");
     const respuesta = await request.get("/aviso-de-privacidad");
     expect(respuesta.status()).toBe(200);
+  });
+
+  test("ningún link interno de la página da 404", async ({ page, request }) => {
+    await page.goto("/");
+    const rutas = await page.evaluate(() => [
+      ...new Set(
+        [...document.querySelectorAll<HTMLAnchorElement>("a[href^='/']")].map(
+          (a) => new URL(a.href).pathname,
+        ),
+      ),
+    ]);
+    for (const ruta of rutas) {
+      const respuesta = await request.get(ruta);
+      expect(respuesta.status(), ruta).toBe(200);
+    }
   });
 });
