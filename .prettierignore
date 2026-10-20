@@ -1,0 +1,6 @@
+dist/
+.astro/
+node_modules/
+package-lock.json
+# Diseño de referencia exportado: se lee como especificación, no se formatea.
+docs/design/

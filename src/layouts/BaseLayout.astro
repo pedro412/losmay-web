@@ -1,0 +1,63 @@
+---
+/**
+ * Layout base de todas las páginas: `<head>` común, skip link, topbar, header
+ * sticky, `<main id="contenido">` y footer.
+ *
+ * Los metadatos de SEO (description, canonical, Open Graph, JSON-LD) entran
+ * por el slot `head`:
+ *
+ * <BaseLayout title="…">
+ *   <Fragment slot="head">
+ *     <meta name="description" content="…" />
+ *   </Fragment>
+ *   …secciones…
+ * </BaseLayout>
+ */
+import { Font } from "astro:assets";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import Topbar from "../components/Topbar.astro";
+import { colorMarca, ui } from "../data/site";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content={colorMarca} />
+    <!-- Favicons a partir del isotipo (se regeneran con `npm run favicons`) -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <!-- Fuentes self-hosted. Se precarga la Condensed 800 de los titulares (LCP). -->
+    <Font cssVariable="--font-barlow-condensed" preload={[{ weight: 800 }]} />
+    <Font cssVariable="--font-barlow" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a
+      href="#contenido"
+      class="fixed top-3 left-3 z-50 -translate-y-[200%] rounded-[10px] bg-marino px-5 py-3 font-bold text-white no-underline focus:translate-y-0"
+    >
+      {ui.saltarAlContenido}
+    </a>
+    <div id="inicio">
+      <Topbar />
+      <Header />
+      <main id="contenido" tabindex="-1" class="outline-none">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

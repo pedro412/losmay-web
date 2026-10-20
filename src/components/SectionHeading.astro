@@ -1,0 +1,62 @@
+---
+/**
+ * Eyebrow + titular de sección (h2 condensado en mayúsculas).
+ *
+ * `tone` sigue el fondo de la sección:
+ * - `claro` (blanco): eyebrow rojo, titular marino.
+ * - `concreto`: eyebrow rojo-700 (contraste sobre concreto), titular marino.
+ * - `marino`: eyebrow marino-200, titular blanco.
+ *
+ * Usa `id` en el h2 y `aria-labelledby` en la `<section>`.
+ */
+type Tone = "claro" | "concreto" | "marino";
+
+interface Props {
+  eyebrow: string;
+  /** Texto del titular; también se puede pasar como slot por si lleva marcado. */
+  title?: string;
+  id?: string;
+  tone?: Tone;
+  /** Nivel del titular (por defecto h2). */
+  as?: "h1" | "h2" | "h3";
+  /** Clases extra del titular, p. ej. `max-w-[820px]`. */
+  titleClass?: string;
+  class?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  id,
+  tone = "claro",
+  as: Heading = "h2",
+  titleClass,
+  class: className,
+} = Astro.props;
+
+const eyebrowColor: Record<Tone, string> = {
+  claro: "text-rojo",
+  concreto: "text-rojo-700",
+  marino: "text-marino-200",
+};
+
+const titleColor: Record<Tone, string> = {
+  claro: "text-marino",
+  concreto: "text-marino",
+  marino: "text-white",
+};
+---
+
+<div class={className}>
+  <p class:list={["eyebrow", eyebrowColor[tone]]}>{eyebrow}</p>
+  <Heading
+    id={id}
+    class:list={[
+      "display-heading text-section mt-2.5",
+      titleColor[tone],
+      titleClass,
+    ]}
+  >
+    <slot>{title}</slot>
+  </Heading>
+</div>

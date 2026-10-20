@@ -1,0 +1,51 @@
+---
+/**
+ * Íconos de línea del diseño (docs/design/Main.dc.html), en SVG inline.
+ *
+ * Son decorativos: siempre llevan `aria-hidden` y el texto accesible va en el
+ * elemento que los contiene. Toman el color de `currentColor` (usa
+ * `text-rojo`, `text-white`, etc.).
+ *
+ * Tamaños y grosores que usa el diseño:
+ * - 18 px / 2.2: flecha de botones · 18 px / 2: teléfono en botones
+ * - 20 px / 2: pin de dirección · 20 px / 2.2: chevron del menú móvil
+ * - 22 px / 2: menú y cerrar · 24 px / 1.8: tarjetas "Para quién"
+ * - 40 px / 1.8: tarjetas "Por qué Los May"
+ */
+import type { HTMLAttributes } from "astro/types";
+import { icons, type IconName } from "../lib/iconos";
+
+type Props = Omit<HTMLAttributes<"svg">, "class"> & {
+  name: IconName;
+  /** Lado en px (por defecto 24). */
+  size?: number;
+  /** Grosor del trazo, de 1.8 a 2.2 en el diseño (por defecto 2). */
+  strokeWidth?: number;
+  class?: string;
+};
+
+const {
+  name,
+  size = 24,
+  strokeWidth = 2,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class:list={["block shrink-0", className]}
+  {...rest}
+  set:html={icons[name]}
+/>

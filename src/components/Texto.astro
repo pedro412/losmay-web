@@ -1,0 +1,29 @@
+---
+/**
+ * Texto de `src/data/site.ts` con los datos por confirmar resaltados.
+ *
+ * Los tramos entre corchetes ("[zonas]", "[Confirmar]") se pintan en amarillo,
+ * como en el diseño, para que se vean en la página hasta que el cliente los
+ * confirme (issue #15). El resto se renderiza tal cual, sin envoltorio.
+ *
+ * <p><Texto texto={faq[1].respuesta} /></p>
+ */
+import { partirPendientes } from "../data/site";
+
+interface Props {
+  texto: string;
+}
+
+const { texto } = Astro.props;
+const segmentos = partirPendientes(texto);
+---
+
+{segmentos.map(({ texto, pendiente }) =>
+  pendiente ? (
+    <span class="rounded-[4px] bg-pendiente px-1.5 py-px font-semibold text-pendiente-texto">
+      {texto}
+    </span>
+  ) : (
+    texto
+  ),
+)}

@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/*
+ * Sistema visual de Los May (docs/design/Marca.dc.html y Main.dc.html).
+ * Se quita la paleta por defecto de Tailwind para usar solo los colores de
+ * marca: un azul (marino), un rojo para la acción y el verde de WhatsApp.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Marino: fondo de marca y titulares */
+  --color-marino: #0e2a47;
+  --color-marino-900: #0a2038; /* topbar y footer */
+  --color-marino-line: #2b4d72; /* bordes sobre marino */
+  --color-marino-200: #c9d6e4; /* eyebrows y texto secundario sobre marino */
+  --color-marino-100: #d5dee8; /* párrafos sobre marino */
+  --color-marino-300: #a9b8c9; /* línea legal del footer */
+  --color-marino-700: #22405f; /* divisor de la línea legal del footer */
+
+  /* Rojo Los May: botones, acento y franja del titular */
+  --color-rojo: #c8202a;
+  --color-rojo-700: #b01c25; /* eyebrow sobre concreto (contraste) */
+  --color-rojo-400: #e0353c; /* logo sobre marino */
+
+  /* Neutros */
+  --color-concreto: #ece9e4; /* fondos claros */
+  --color-grafito: #16202b; /* texto */
+  --color-acero: #545d68; /* texto secundario */
+  --color-acero-600: #4b535d; /* texto secundario sobre concreto */
+  --color-borde: #d6d1c9; /* bordes de cards */
+  --color-borde-suave: #e3dfd8; /* divisores */
+  --color-borde-tenue: #efece7; /* divisores de los links del menú móvil */
+
+  /* WhatsApp: siempre en verde con su logo */
+  --color-whatsapp: #138544;
+  --color-whatsapp-hover: #0f6e38; /* más oscuro: el texto blanco sube de contraste en hover */
+
+  /* Resaltado de datos por confirmar con el cliente ("[confirmar]", "[zonas]") */
+  --color-pendiente: #ffe7a3;
+  --color-pendiente-texto: #4a3800;
+
+  /*
+   * Tipografía. Las variables --font-barlow* las genera la API de fuentes de
+   * Astro (astro.config.mjs) e incluyen fallbacks con métricas ajustadas.
+   */
+  --font-sans: var(--font-barlow, system-ui, sans-serif);
+  --font-display: var(--font-barlow-condensed, "Arial Narrow", sans-serif);
+
+  /*
+   * Tamaños fluidos del diseño. cqi sin contenedor equivale al ancho del
+   * viewport, igual que en el diseño (el contenedor raíz ocupa todo el ancho).
+   */
+  --text-section: clamp(36px, 5cqi, 68px);
+  --text-section--line-height: 0.95;
+  --text-hero: clamp(60px, 8.6cqi, 132px);
+  --text-hero--line-height: 0.9;
+  --text-cta: clamp(40px, 5.6cqi, 80px);
+  --text-cta--line-height: 0.92;
+
+  --container-page: 1280px;
+
+  /*
+   * Único breakpoint del diseño: 760px separa el header móvil (logo,
+   * WhatsApp y hamburguesa) del de escritorio (logo, nav y botón). Se
+   * reemplaza `md` para que `md:` signifique "desde 760px".
+   */
+  --breakpoint-md: 47.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Alto del header sticky (incluye el borde), para los anchors. */
+    --altura-header: 65px;
+  }
+
+  @media (min-width: 47.5rem) {
+    html {
+      --altura-header: 101px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /*
+   * Los anchors del menú (#pedido, #entregas…) y el skip link (#contenido)
+   * no quedan tapados por el header sticky.
+   */
+  main,
+  main [id] {
+    scroll-margin-top: var(--altura-header);
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-grafito);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /*
+   * Foco visible de doble anillo: un separador pegado al elemento y el anillo
+   * de 3px afuera. Sobre fondos claros es blanco + marino; dentro de
+   * `foco-sobre-marino` (footer) se invierte a marino + blanco.
+   */
+  :focus-visible {
+    outline: 3px solid var(--foco-anillo, var(--color-marino));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--foco-separador, var(--color-white));
+  }
+}
+
+/* Invierte los colores del anillo de foco para fondos marino. */
+@utility foco-sobre-marino {
+  --foco-anillo: var(--color-white);
+  --foco-separador: var(--color-marino-900);
+}
+
+/* Etiqueta pequeña sobre los titulares de sección. El color lo pone cada uso. */
+@utility eyebrow {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Titular condensado en mayúsculas (h2 de sección, h1 del hero, CTA). */
+@utility display-heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Padding vertical y horizontal de cada sección de la landing. */
+@utility section-pad {
+  padding-block: clamp(56px, 8cqi, 120px);
+  padding-inline: clamp(20px, 5cqi, 80px);
+}
+
+/* Padding horizontal solo (header, footer y secciones con padding propio). */
+@utility page-gutter {
+  padding-inline: clamp(20px, 5cqi, 80px);
+}
+
+/* Contenedor centrado de 1280px dentro de cada sección. */
+@utility page-container {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+}

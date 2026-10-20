@@ -1,0 +1,119 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import WhatsAppIcon from "../assets/icons/whatsapp.svg";
+
+/**
+ * Botón o link con aspecto de botón, con las variantes del diseño:
+ *
+ * - `whatsapp`: verde con el logo de WhatsApp (siempre en verde).
+ * - `rojo`: acción principal fuera de WhatsApp ("Pedir mayoreo").
+ * - `marino`: sólido marino (llamar a sucursal).
+ * - `outline-claro`: borde y texto blancos, sobre fondo marino.
+ * - `outline-marino`: borde y texto marino, sobre fondo claro.
+ *
+ * Con `href` se renderiza como `<a>`; sin `href`, como `<button>`.
+ * Íconos extra van en los slots `start` y `end` (18-22 px, `aria-hidden`).
+ */
+type Variant =
+  "whatsapp" | "rojo" | "marino" | "outline-claro" | "outline-marino";
+type Size = "sm" | "md" | "lg";
+type Shape = "md" | "lg" | "pill";
+
+type Props = {
+  variant?: Variant;
+  /** sm: 44 px / 15 px · md: 48 px / 16 px · lg: 56 px / 17 px */
+  size?: Size;
+  /** md: radio 10 px · lg: radio 12 px · pill: totalmente redondo */
+  shape?: Shape;
+  /** Ocupa todo el ancho disponible. */
+  block?: boolean;
+  /** Abre en otra pestaña con `rel="noopener"` (links a WhatsApp y Maps). */
+  external?: boolean;
+  /** Muestra el logo de WhatsApp en la variante `whatsapp` (por defecto, sí). */
+  icon?: boolean;
+  class?: string;
+} & (
+  | (Omit<HTMLAttributes<"a">, "class"> & { href: string })
+  | (Omit<HTMLAttributes<"button">, "class"> & { href?: undefined })
+);
+
+const {
+  variant = "rojo",
+  size = "lg",
+  shape = "md",
+  block = false,
+  external = false,
+  icon = true,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const variants: Record<Variant, string> = {
+  whatsapp: "bg-whatsapp text-white hover:bg-whatsapp-hover",
+  rojo: "bg-rojo text-white hover:brightness-110",
+  marino: "bg-marino text-white hover:brightness-125",
+  "outline-claro": "border-2 border-white text-white hover:bg-white/10",
+  "outline-marino": "border-2 border-marino text-marino hover:bg-marino/5",
+};
+
+const sizes: Record<Size, string> = {
+  sm: "min-h-11 px-[18px] text-[15px] gap-2",
+  md: "min-h-12 px-5 text-base gap-2",
+  lg: "min-h-14 px-6 text-[17px] gap-2.5",
+};
+
+const shapes: Record<Shape, string> = {
+  md: "rounded-[10px]",
+  lg: "rounded-xl",
+  pill: "rounded-full",
+};
+
+const iconSize = size === "sm" ? 18 : 22;
+
+const classes = [
+  block ? "flex w-full" : "inline-flex",
+  "items-center justify-center text-center leading-tight font-bold no-underline",
+  "cursor-pointer transition-[filter,background-color] duration-150",
+  variants[variant],
+  sizes[size],
+  shapes[shape],
+  className,
+];
+
+const showWhatsApp = variant === "whatsapp" && icon;
+const linkProps = external ? { target: "_blank", rel: "noopener" } : {};
+---
+
+{"href" in rest && rest.href !== undefined ? (
+  <a class:list={classes} {...linkProps} {...rest}>
+    {showWhatsApp && (
+      <WhatsAppIcon
+        width={iconSize}
+        height={iconSize}
+        aria-hidden="true"
+        class="block shrink-0"
+      />
+    )}
+    <slot name="start" />
+    <slot />
+    <slot name="end" />
+  </a>
+) : (
+  <button
+    class:list={classes}
+    {...(rest as HTMLAttributes<"button">)}
+    type={(rest as HTMLAttributes<"button">).type ?? "button"}
+  >
+    {showWhatsApp && (
+      <WhatsAppIcon
+        width={iconSize}
+        height={iconSize}
+        aria-hidden="true"
+        class="block shrink-0"
+      />
+    )}
+    <slot name="start" />
+    <slot />
+    <slot name="end" />
+  </button>
+)}
