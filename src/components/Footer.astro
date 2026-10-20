@@ -3,8 +3,15 @@
  * Footer en marino-900: logo blanco con la descripción, sucursales y
  * contacto (`tel:`), y la línea legal con el link al aviso de privacidad.
  *
- * Los links miden 44px de alto (área táctil en móvil). En la línea legal el
- * link compensa ese alto con márgenes negativos para no mover el layout.
+ * Contacto: en escritorio (≥760px) cada línea es un renglón de 22.5px con 8px
+ * de margen, como en el diseño (30.5px de una línea a la siguiente). En móvil
+ * los links `tel:` miden 44px de alto (área táctil) y losmay.com también, para
+ * que los tres renglones queden parejos; el primero sube 8px y el último
+ * recupera 10px abajo, para que el texto quede a la distancia del diseño del
+ * encabezado y de la línea legal.
+ *
+ * En la línea legal el link mide 44px y compensa ese alto con márgenes
+ * negativos para no mover el layout.
  */
 import { legal, negocio, sucursales, telLink } from "../data/site";
 import Logo from "./Logo.astro";
@@ -44,16 +51,18 @@ const hayAvisoPrivacidad =
         Contacto
       </h2>
       {sucursales.map(({ nombre, telefono }) => (
-        <p class="m-0 first-of-type:-mt-2">
+        <p class="m-0 first-of-type:-mt-2 md:mb-2 md:first-of-type:mt-0">
           <a
             href={telLink(telefono)}
-            class="inline-flex min-h-11 items-center text-white no-underline hover:underline"
+            class="inline-flex min-h-11 items-center text-white no-underline hover:underline md:inline md:min-h-0"
           >
             {nombre} · {telefono}
           </a>
         </p>
       ))}
-      <p class="m-0">{negocio.dominio}</p>
+      <p class="m-0 -mb-2.5 flex min-h-11 items-center md:mb-0 md:block md:min-h-0">
+        {negocio.dominio}
+      </p>
     </div>
   </div>
 
