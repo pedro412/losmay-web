@@ -12,7 +12,8 @@
     "astro": "astro",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "astro check"
+    "check": "astro check",
+    "favicons": "node scripts/favicons.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",

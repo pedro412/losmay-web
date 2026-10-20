@@ -14,8 +14,10 @@ const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <!-- Favicons a partir del isotipo (se regeneran con `npm run favicons`) -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <!-- Fuentes self-hosted. Se precarga la Condensed 800 de los titulares (LCP). -->
