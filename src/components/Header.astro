@@ -1,0 +1,205 @@
+---
+/**
+ * Header sticky con el menú (docs/design/Main.dc.html).
+ *
+ * - Móvil (<760px): logo de 124px, botón redondo de WhatsApp y hamburguesa,
+ *   ambos de 44px. La hamburguesa abre un panel bajo el header con los links
+ *   y un botón grande de WhatsApp.
+ * - Escritorio (≥760px): logo de 164px, los 5 links y el botón verde.
+ *   La fila completa del diseño necesita ~1030px, así que entre 760 y
+ *   1023px los espacios se compactan y el botón verde se reduce al mismo
+ *   botón redondo de 44px del móvil (con su `aria-label`), para que no haya
+ *   scroll horizontal. Desde 1024px (`lg:`) se ve como en el diseño.
+ *
+ * El cambio entre las dos versiones es solo CSS (`md:` = 760px, ver
+ * `--breakpoint-md` en global.css). El script de abajo es el único JS de la
+ * página: abre y cierra el panel móvil.
+ */
+import WhatsAppIcon from "../assets/icons/whatsapp.svg";
+import { menu, wa } from "../data/site";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+import Logo from "./Logo.astro";
+
+// Fuera de la landing (p. ej. el aviso de privacidad) los anchors apuntan a
+// la página principal.
+const enInicio = Astro.url.pathname === "/";
+const inicio = enInicio ? "#inicio" : "/";
+// Botón redondo de WhatsApp (44px): header móvil y escritorio compacto.
+const claseWhatsAppRedondo =
+  "flex size-11 shrink-0 items-center justify-center rounded-full bg-whatsapp text-white transition-[filter] duration-150 hover:brightness-110";
+const links = menu.map(({ label, href }) => ({
+  label,
+  href: enInicio ? href : `/${href}`,
+}));
+---
+
+<header
+  class="sticky top-0 z-20 border-b border-borde-suave bg-white"
+  data-header
+>
+  <!-- Móvil -->
+  <div class="flex h-16 items-center justify-between gap-3 px-4 md:hidden">
+    <a href={inicio} aria-label="Los May — inicio" class="block shrink-0">
+      <Logo class="w-[124px]" decorative />
+    </a>
+    <div class="flex items-center gap-2">
+      <a
+        href={wa.general}
+        target="_blank"
+        rel="noopener"
+        aria-label="Cotizar por WhatsApp"
+        class={claseWhatsAppRedondo}
+      >
+        <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
+      </a>
+      <button
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="menu-movil"
+        class="group flex size-11 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino"
+        data-menu-toggle
+      >
+        <Icon name="menu" size={22} class="group-aria-expanded:hidden" />
+        <Icon
+          name="cerrar"
+          size={22}
+          class="hidden group-aria-expanded:block"
+        />
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú móvil: oculto con `hidden` hasta que se abre -->
+  <nav
+    id="menu-movil"
+    aria-label="Menú"
+    hidden
+    class="absolute inset-x-0 top-16 flex max-h-[calc(100dvh-4rem)] flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px_rgb(14_42_71/0.18)] md:hidden"
+    data-menu
+  >
+    {links.map(({ label, href }) => (
+      <a
+        href={href}
+        class="flex min-h-14 items-center justify-between border-b border-borde-tenue font-display text-2xl font-bold text-marino uppercase no-underline"
+      >
+        {label}
+        <Icon
+          name="chevron-derecha"
+          size={20}
+          strokeWidth={2.2}
+          class="text-rojo"
+        />
+      </a>
+    ))}
+    <Button href={wa.general} variant="whatsapp" external block class="mt-4">
+      Cotizar por WhatsApp
+    </Button>
+  </nav>
+
+  <!-- Escritorio -->
+  <div class="hidden items-center justify-between gap-4 py-3.5 page-gutter md:flex lg:gap-6 xl:gap-8">
+    <a href={inicio} aria-label="Los May — inicio" class="block shrink-0">
+      <Logo class="w-[164px]" decorative />
+    </a>
+    <nav
+      aria-label="Principal"
+      class="flex items-center gap-4 lg:gap-6 xl:gap-8"
+    >
+      {links.map(({ label, href }) => (
+        <a
+          href={href}
+          class="py-2.5 text-[15px] font-semibold whitespace-nowrap text-grafito no-underline decoration-rojo decoration-2 underline-offset-[6px] hover:underline"
+        >
+          {label}
+        </a>
+      ))}
+      <a
+        href={wa.general}
+        target="_blank"
+        rel="noopener"
+        aria-label="Cotizar por WhatsApp"
+        class:list={[claseWhatsAppRedondo, "lg:hidden"]}
+      >
+        <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
+      </a>
+      <div class="hidden lg:block">
+        <Button
+          href={wa.general}
+          variant="whatsapp"
+          size="sm"
+          shape="pill"
+          external
+          class="whitespace-nowrap"
+        >
+          Cotizar por WhatsApp
+        </Button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const boton = header?.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const panel = header?.querySelector<HTMLElement>("[data-menu]");
+
+  if (header && boton && panel) {
+    const estaAbierto = () => boton.getAttribute("aria-expanded") === "true";
+
+    const cambiar = (abrir: boolean, devolverFoco = false) => {
+      boton.setAttribute("aria-expanded", String(abrir));
+      boton.setAttribute("aria-label", abrir ? "Cerrar menú" : "Abrir menú");
+      panel.hidden = !abrir;
+      if (!abrir && devolverFoco) boton.focus();
+    };
+
+    boton.addEventListener("click", () => cambiar(!estaAbierto()));
+
+    // Al tocar un link (anchor o WhatsApp) se cierra.
+    panel.addEventListener("click", (evento) => {
+      if (evento.target instanceof Element && evento.target.closest("a")) {
+        cambiar(false);
+      }
+    });
+
+    document.addEventListener("keydown", (evento) => {
+      if (evento.key === "Escape" && estaAbierto()) cambiar(false, true);
+    });
+
+    // Clic o toque fuera del header. `pointerdown` en lugar de `click`
+    // porque iOS Safari no siempre manda `click` al tocar zonas no
+    // interactivas.
+    document.addEventListener("pointerdown", (evento) => {
+      if (
+        estaAbierto() &&
+        evento.target instanceof Node &&
+        !header.contains(evento.target)
+      ) {
+        cambiar(false);
+      }
+    });
+
+    // Con teclado: si el foco sale del header (Tab desde el último link),
+    // se cierra.
+    header.addEventListener("focusout", (evento) => {
+      const destino = evento.relatedTarget;
+      if (
+        estaAbierto() &&
+        destino instanceof Node &&
+        !header.contains(destino)
+      ) {
+        cambiar(false);
+      }
+    });
+
+    // Si la ventana pasa a escritorio con el menú abierto, se cierra para que
+    // no reaparezca abierto al volver a móvil.
+    window
+      .matchMedia("(min-width: 47.5rem)")
+      .addEventListener("change", (evento) => {
+        if (evento.matches) cambiar(false);
+      });
+  }
+</script>
