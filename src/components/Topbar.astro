@@ -1,11 +1,14 @@
 ---
 /**
  * Franja superior en marino-900, arriba del header. Se va con el scroll; el
- * header es el que se queda pegado.
+ * header es el que se queda pegado. Va en un `<aside>` con nombre para que
+ * no quede contenido fuera de un landmark.
  */
 import { topbar } from "../data/site";
 ---
 
-<p class="m-0 bg-marino-900 px-4 py-[9px] text-center text-[13px] leading-normal font-semibold tracking-[0.02em] text-marino-100">
-  {topbar}
-</p>
+<aside aria-label="Destacado">
+  <p class="m-0 bg-marino-900 px-4 py-[9px] text-center text-[13px] leading-normal font-semibold tracking-[0.02em] text-marino-100">
+    {topbar}
+  </p>
+</aside>

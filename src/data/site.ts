@@ -72,6 +72,12 @@ export const tienePendientes = (texto: string): boolean =>
 /* Negocio                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Color de marca para `<meta name="theme-color">`. Es el mismo valor que
+ * `--color-marino` en src/styles/global.css.
+ */
+export const colorMarca = "#0E2A47";
+
 export const negocio = {
   nombre: "Los May Materiales para Construcción",
   nombreCorto: "Los May",
@@ -283,8 +289,17 @@ export const menu: readonly LinkMenu[] = [
   { label: "Preguntas", href: "#preguntas" },
 ];
 
-/** Franja superior (topbar), arriba del header. */
-export const topbar = `Distribuidor autorizado Holcim · Entrega en obra · ${sucursales.length} sucursales en Carmen`;
+/**
+ * Franja superior (topbar), arriba del header. Los espacios antes de cada «·»
+ * y dentro de «Entrega en obra» y «2 sucursales en Carmen» son de no
+ * separación (\u00A0): en móvil el renglón solo se corta después de un «·» (o
+ * dentro de la primera frase), nunca empieza con «·» ni deja el número solo.
+ */
+export const topbar = [
+  "Distribuidor autorizado Holcim",
+  "Entrega\u00A0en\u00A0obra",
+  `${sucursales.length}\u00A0sucursales\u00A0en\u00A0Carmen`,
+].join("\u00A0· ");
 
 /** Línea legal del footer. */
 export const legal = {

@@ -17,6 +17,7 @@ import { Font } from "astro:assets";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Topbar from "../components/Topbar.astro";
+import { colorMarca } from "../data/site";
 import "../styles/global.css";
 
 interface Props {
@@ -31,7 +32,7 @@ const { title = "Los May — Cemento Holcim por mayoreo" } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0E2A47" />
+    <meta name="theme-color" content={colorMarca} />
     <!-- Favicons a partir del isotipo (se regeneran con `npm run favicons`) -->
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
