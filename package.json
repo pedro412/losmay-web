@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "check": "astro check",
     "favicons": "node scripts/favicons.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "og": "node scripts/og-image.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
