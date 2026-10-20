@@ -9,11 +9,16 @@
  *   La fila completa del diseño necesita ~1030px, así que entre 760 y
  *   1023px los espacios se compactan y el botón verde se reduce al mismo
  *   botón redondo de 44px del móvil (con su `aria-label`), para que no haya
- *   scroll horizontal. Desde 1024px (`lg:`) se ve como en el diseño.
+ *   scroll horizontal. A 760px la fila compacta mide ~727px, así que cabe
+ *   aun con una barra de scroll clásica de 15px (Windows/Linux). Desde
+ *   1024px (`lg:`) se ve como en el diseño.
+ *   TODO(diseño): validar con diseño la versión compacta de 760–1023px, que
+ *   el diseño no define.
  *
  * El cambio entre las dos versiones es solo CSS (`md:` = 760px, ver
  * `--breakpoint-md` en global.css). El script de abajo es el único JS de la
- * página: abre y cierra el panel móvil.
+ * página: abre y cierra el panel móvil y ajusta su alto al espacio que queda
+ * bajo el header (con la página arriba, el topbar también ocupa pantalla).
  */
 import WhatsAppIcon from "../assets/icons/whatsapp.svg";
 import { menu, wa } from "../data/site";
@@ -76,7 +81,7 @@ const links = menu.map(({ label, href }) => ({
     id="menu-movil"
     aria-label="Menú"
     hidden
-    class="absolute inset-x-0 top-16 flex max-h-[calc(100dvh-4rem)] flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px_rgb(14_42_71/0.18)] md:hidden"
+    class="absolute inset-x-0 top-16 flex max-h-[calc(100dvh-4rem)] flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px] shadow-marino/18 md:hidden"
     data-menu
   >
     {links.map(({ label, href }) => (
@@ -105,7 +110,7 @@ const links = menu.map(({ label, href }) => ({
     </a>
     <nav
       aria-label="Principal"
-      class="flex items-center gap-4 lg:gap-6 xl:gap-8"
+      class="flex items-center gap-3 lg:gap-6 xl:gap-8"
     >
       {links.map(({ label, href }) => (
         <a
@@ -148,11 +153,29 @@ const links = menu.map(({ label, href }) => ({
   if (header && boton && panel) {
     const estaAbierto = () => boton.getAttribute("aria-expanded") === "true";
 
+    // El panel empieza bajo el header, que con la página arriba queda bajo
+    // el topbar. El `max-h` de CSS no puede saberlo, así que al abrir (y al
+    // hacer scroll o cambiar el tamaño de la ventana) se limita al espacio
+    // que queda hasta el borde inferior de la pantalla.
+    const ajustarAlto = () => {
+      if (!estaAbierto()) return;
+      const arriba = panel.getBoundingClientRect().top;
+      panel.style.maxHeight = `${Math.max(Math.floor(window.innerHeight - arriba), 0)}px`;
+    };
+
     const cambiar = (abrir: boolean, devolverFoco = false) => {
       boton.setAttribute("aria-expanded", String(abrir));
       boton.setAttribute("aria-label", abrir ? "Cerrar menú" : "Abrir menú");
       panel.hidden = !abrir;
-      if (!abrir && devolverFoco) boton.focus();
+      if (abrir) {
+        ajustarAlto();
+        window.addEventListener("scroll", ajustarAlto, { passive: true });
+        window.addEventListener("resize", ajustarAlto);
+      } else {
+        window.removeEventListener("scroll", ajustarAlto);
+        window.removeEventListener("resize", ajustarAlto);
+        if (devolverFoco) boton.focus();
+      }
     };
 
     boton.addEventListener("click", () => cambiar(!estaAbierto()));
