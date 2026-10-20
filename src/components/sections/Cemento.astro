@@ -62,7 +62,7 @@ const partirSubindice = (valor: string): string[] => valor.split(SUBINDICE_2);
         ))}
       </dl>
 
-      <ul class="mt-5 flex list-none flex-wrap gap-2 p-0">
+      <ul role="list" class="mt-5 flex list-none flex-wrap gap-2 p-0">
         {cemento.atributos.map((atributo) => (
           <li class="rounded-full border border-borde px-3.5 py-1.5 text-[14px] font-semibold">
             {atributo}
@@ -76,7 +76,7 @@ const partirSubindice = (valor: string): string[] => valor.split(SUBINDICE_2);
         {productos.titulo}
       </h3>
       <p class="text-[16px] text-acero-600">{productos.texto}</p>
-      <ul class="grid list-none grid-cols-2 gap-2 p-0">
+      <ul role="list" class="grid list-none grid-cols-2 gap-2 p-0">
         {productos.lista.map((producto) => (
           <li class="rounded-xl bg-white px-4 py-3.5 font-bold text-marino">
             {producto}

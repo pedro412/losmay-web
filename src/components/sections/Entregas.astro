@@ -24,7 +24,10 @@ import { pasos } from "../../data/site";
       tone="marino"
     />
 
-    <ol class="mt-8 grid list-none grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-8 gap-y-3 p-0">
+    <ol
+      role="list"
+      class="mt-8 grid list-none grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-8 gap-y-3 p-0"
+    >
       {pasos.map(({ numero, titulo, texto }) => (
         <li class="flex items-start gap-[18px] border-t-[3px] border-rojo pt-5">
           <span
