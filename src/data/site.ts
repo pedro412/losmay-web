@@ -283,6 +283,22 @@ export const menu: readonly LinkMenu[] = [
   { label: "Preguntas", href: "#preguntas" },
 ];
 
+/** Franja superior (topbar), arriba del header. */
+export const topbar = `Distribuidor autorizado Holcim · Entrega en obra · ${sucursales.length} sucursales en Carmen`;
+
+/** Línea legal del footer. */
+export const legal = {
+  // TODO(cliente): confirmar la autorización de Holcim para usar su marca y
+  // logo (issue #15).
+  marcas:
+    "Holcim y Apasco son marcas registradas de Holcim, usadas con autorización.",
+  /** La página se publica en el issue #13. */
+  avisoPrivacidad: {
+    label: "Aviso de privacidad",
+    href: "/aviso-de-privacidad",
+  },
+} as const;
+
 /* -------------------------------------------------------------------------- */
 /* Secciones                                                                  */
 /* -------------------------------------------------------------------------- */
