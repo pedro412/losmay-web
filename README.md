@@ -65,9 +65,9 @@ docs/design/           diseño de referencia
 `src/layouts/BaseLayout.astro` arma todas las páginas: `<html lang="es-MX">`, `theme-color`, fuentes, skip link "Saltar al contenido", topbar, header, `<main id="contenido">` y footer. Los metadatos de SEO entran por el slot `head` (`<Fragment slot="head">…</Fragment>`).
 
 - **Header** (`src/components/Header.astro`): sticky. Bajo 760px muestra logo, WhatsApp redondo y hamburguesa; desde 760px, logo, los 5 links y el botón de WhatsApp. Entre 760 y 1023px la fila del diseño no cabe, así que el botón de WhatsApp se reduce al redondo de 44px y los espacios se compactan. El cambio es solo CSS.
-- **Menú móvil**: el único JS de la página (`<script>` en `Header.astro`). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio.
+- **Menú móvil**: el único JS de la página (`<script>` en `Header.astro`). Cambia `aria-expanded` y `aria-label`, y se cierra al tocar un link, con `Escape` (devuelve el foco al botón), al tocar fuera, al salir con Tab o al pasar a escritorio. Al abrirse limita el alto del panel al espacio que queda bajo el header, para que en pantallas bajas el botón de WhatsApp se alcance completo.
 - **Anchors**: `scroll-behavior: smooth` (si no hay `prefers-reduced-motion`) y `scroll-margin-top: var(--altura-header)` en todo `id` dentro de `<main>`, para que el header no tape el inicio de la sección. Si cambia la altura del header, actualiza `--altura-header` en `global.css`.
-- **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). El link al aviso de privacidad apunta a `/aviso-de-privacidad` (la página llega en el issue #13).
+- **Footer** (`src/components/Footer.astro`): datos de `site.ts` (`negocio`, `sucursales`, `legal`). El link al aviso de privacidad (`/aviso-de-privacidad`) solo se muestra cuando existe `src/pages/aviso-de-privacidad.astro` (llega en el issue #13), para no publicar un link roto. Los links miden 44px de alto y el foco se ve en blanco sobre el marino (`foco-sobre-marino` en `global.css`).
 
 ## Assets
 
