@@ -53,7 +53,10 @@ test.describe("Carga de la página", () => {
       "content",
       /#0E2A47/i,
     );
-    await expect(page).toHaveTitle("Los May — Cemento Holcim por mayoreo");
+    // Título de SEO (#11), propuesto en el issue.
+    await expect(page).toHaveTitle(
+      "Cemento Holcim por mayoreo en Ciudad del Carmen | Los May",
+    );
   });
 
   for (const ancho of ANCHOS) {
