@@ -14,6 +14,10 @@
  * Para cualquier otra etiqueta del `<head>` queda el slot `head`
  * (`<Fragment slot="head">…</Fragment>`).
  *
+ * Las páginas fuera de la landing (p. ej. el aviso de privacidad) usan
+ * `headerSimple`: header con solo el logo y WhatsApp, sin el menú de las
+ * secciones.
+ *
  * Google Analytics 4 lo pone `<Analytics>` (solo en producción, ver
  * src/lib/analytics.ts).
  */
@@ -33,9 +37,17 @@ interface Props {
   noindex?: boolean;
   /** Bloques de JSON-LD para el `<head>`. */
   jsonLd?: readonly (object | null)[];
+  /** Header simplificado: solo logo y WhatsApp (ver `Header.astro`). */
+  headerSimple?: boolean;
 }
 
-const { title = seo.titulo, description, noindex, jsonLd } = Astro.props;
+const {
+  title = seo.titulo,
+  description,
+  noindex,
+  jsonLd,
+  headerSimple = false,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -72,7 +84,7 @@ const { title = seo.titulo, description, noindex, jsonLd } = Astro.props;
     </a>
     <div id="inicio">
       <Topbar />
-      <Header />
+      <Header simple={headerSimple} />
       <main id="contenido" tabindex="-1" class="outline-none">
         <slot />
       </main>
