@@ -17,6 +17,8 @@
   --color-marino-line: #2b4d72; /* bordes sobre marino */
   --color-marino-200: #c9d6e4; /* eyebrows y texto secundario sobre marino */
   --color-marino-100: #d5dee8; /* párrafos sobre marino */
+  --color-marino-300: #a9b8c9; /* línea legal del footer */
+  --color-marino-700: #22405f; /* divisor de la línea legal del footer */
 
   /* Rojo Los May: botones, acento y franja del titular */
   --color-rojo: #c8202a;
@@ -30,6 +32,7 @@
   --color-acero-600: #4b535d; /* texto secundario sobre concreto */
   --color-borde: #d6d1c9; /* bordes de cards */
   --color-borde-suave: #e3dfd8; /* divisores */
+  --color-borde-tenue: #efece7; /* divisores de los links del menú móvil */
 
   /* WhatsApp: siempre en verde con su logo */
   --color-whatsapp: #138544;
@@ -57,12 +60,42 @@
   --text-cta--line-height: 0.92;
 
   --container-page: 1280px;
+
+  /*
+   * Único breakpoint del diseño: 760px separa el header móvil (logo,
+   * WhatsApp y hamburguesa) del de escritorio (logo, nav y botón). Se
+   * reemplaza `md` para que `md:` signifique "desde 760px".
+   */
+  --breakpoint-md: 47.5rem;
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Alto del header sticky (incluye el borde), para los anchors. */
+    --altura-header: 65px;
+  }
+
+  @media (min-width: 47.5rem) {
+    html {
+      --altura-header: 101px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /*
+   * Los anchors del menú (#pedido, #entregas…) y el skip link (#contenido)
+   * no quedan tapados por el header sticky.
+   */
+  main,
+  main [id] {
+    scroll-margin-top: var(--altura-header);
   }
 
   body {
