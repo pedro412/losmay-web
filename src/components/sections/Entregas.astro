@@ -1,0 +1,52 @@
+---
+/**
+ * "Tu pedido en obra · En 3 sencillos pasos" (`#entregas`), sobre marino.
+ *
+ * Los pasos vienen de `pasos` en src/data/site.ts. El paso 03 lleva el dato
+ * por confirmar "[zonas cercanas]", que `<Texto>` resalta en amarillo.
+ * TODO(cliente): zonas de entrega fuera de Ciudad del Carmen (issue #15).
+ */
+import SectionHeading from "../SectionHeading.astro";
+import Texto from "../Texto.astro";
+import { pasos } from "../../data/site";
+---
+
+<section
+  id="entregas"
+  aria-labelledby="ent-titulo"
+  class="section-pad bg-marino text-white"
+>
+  <div class="page-container">
+    <SectionHeading
+      eyebrow="Tu pedido en obra"
+      title="En 3 sencillos pasos."
+      id="ent-titulo"
+      tone="marino"
+    />
+
+    <ol class="mt-8 grid list-none grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-8 gap-y-3 p-0">
+      {pasos.map(({ numero, titulo, texto }) => (
+        <li class="flex items-start gap-[18px] border-t-[3px] border-rojo pt-5">
+          <span
+            aria-hidden="true"
+            class="w-14 flex-none font-display text-[52px] leading-[0.9] font-extrabold"
+          >
+            {numero}
+          </span>
+          <div>
+            <h3 class="font-display text-[28px] leading-none font-bold uppercase">
+              {titulo}
+            </h3>
+            <p class="mt-2 text-[16px] text-marino-100">
+              <Texto texto={texto} />
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <p class="mt-8 font-display text-[22px] font-bold tracking-[0.04em] text-marino-200 uppercase">
+      Tu proyecto, nuestra prioridad
+    </p>
+  </div>
+</section>
