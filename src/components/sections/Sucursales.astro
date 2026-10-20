@@ -10,14 +10,31 @@
  *
  * La cuadrícula es `auto-fit, minmax(300px, 1fr)` como en el diseño, con
  * `min(300px, 100%)` para que en pantallas de 320px la tarjeta no desborde.
- * Los botones no llevan el padding horizontal de `<Button>` (el diseño los
- * reparte 50/50 sin padding), para que el teléfono quepa en un renglón en
- * móvil.
+ * Los botones usan el tamaño `compacto` de `<Button>` (48px, letra de 17px y
+ * casi sin padding: el diseño los reparte 50/50), para que el teléfono quepa
+ * en un renglón en móvil.
+ *
+ * El titular dice el número de sucursales con letra (`sucursalesEnLetra`).
+ *
+ * Analytics (issue #12): "Llamar" lleva `data-track="click_llamar"` y
+ * "Cómo llegar" `data-track="click_como_llegar"`, los dos con
+ * `data-sucursal` (`santa_rosalia`, `santa_isabel`); "Llamar" además con
+ * `data-ubicacion="sucursales"`.
  */
-import { formatoHorario, mapsLink, sucursales, telLink } from "../../data/site";
+import {
+  formatoHorario,
+  mapsLink,
+  mayuscula,
+  sucursales,
+  sucursalesEnLetra,
+  telLink,
+} from "../../data/site";
 import Button from "../Button.astro";
 import Icon from "../Icon.astro";
 import SectionHeading from "../SectionHeading.astro";
+
+/** `sucursal` de los eventos de GA4: `santa-rosalia` → `santa_rosalia`. */
+const slug = (id: string): string => id.replaceAll("-", "_");
 ---
 
 <section
@@ -28,7 +45,7 @@ import SectionHeading from "../SectionHeading.astro";
   <div class="page-container">
     <SectionHeading
       eyebrow="Sucursales"
-      title="Dos sucursales en Carmen."
+      title={`${mayuscula(sucursalesEnLetra)} en Carmen.`}
       id="sucursales-titulo"
     />
 
@@ -60,10 +77,13 @@ import SectionHeading from "../SectionHeading.astro";
             <Button
               href={telLink(sucursal.telefono)}
               variant="marino"
-              size="md"
+              size="compacto"
               shape="lg"
               aria-label={`Llamar a ${sucursal.nombre}: ${sucursal.telefono}`}
-              class="flex-1 px-2! text-[17px]!"
+              data-track="click_llamar"
+              data-sucursal={slug(sucursal.id)}
+              data-ubicacion="sucursales"
+              class="flex-1"
             >
               <Icon name="telefono" size={18} />
               {sucursal.telefono}
@@ -71,11 +91,13 @@ import SectionHeading from "../SectionHeading.astro";
             <Button
               href={mapsLink(sucursal.mapsQuery)}
               variant="outline-marino"
-              size="md"
+              size="compacto"
               shape="lg"
               external
               aria-label={`Cómo llegar a ${sucursal.nombre} (abre Google Maps)`}
-              class="flex-1 px-2! text-[17px]!"
+              data-track="click_como_llegar"
+              data-sucursal={slug(sucursal.id)}
+              class="flex-1"
             >
               Cómo llegar
             </Button>
