@@ -33,6 +33,7 @@
   --color-borde: #d6d1c9; /* bordes de cards */
   --color-borde-suave: #e3dfd8; /* divisores */
   --color-borde-tenue: #efece7; /* divisores de los links del menú móvil */
+  --color-borde-punteado: #b9b3a9; /* borde punteado del banner "¿Menos de 16 t?" */
 
   /* WhatsApp: siempre en verde con su logo */
   --color-whatsapp: #138544;
@@ -58,9 +59,17 @@
   --text-hero: clamp(60px, 8.6cqi, 132px);
   --text-hero--line-height: 0.9;
   --text-cta: clamp(40px, 5.6cqi, 80px);
-  --text-cta--line-height: 0.92;
+  /* El diseño trae 0.92, pero así el gancho del «¿» toca el renglón de abajo. */
+  --text-cta--line-height: 1.05;
 
   --container-page: 1280px;
+
+  /*
+   * Margen lateral de la página (gutter). Lo usan `section-pad` y
+   * `page-gutter`, y como token de spacing da `px-gutter`, `-mx-gutter`,
+   * `scroll-px-gutter` (p. ej. el carrusel de "Para quién es").
+   */
+  --spacing-gutter: clamp(20px, 5cqi, 80px);
 
   /*
    * Único breakpoint del diseño: 760px separa el header móvil (logo,
@@ -91,11 +100,14 @@
   }
 
   /*
-   * Los anchors del menú (#pedido, #entregas…) y el skip link (#contenido)
-   * no quedan tapados por el header sticky.
+   * Los anchors del menú (#pedido, #entregas…), el skip link (#contenido) y
+   * lo que recibe foco con Tab no quedan tapados por el header sticky.
+   * (No se usa `scroll-padding-top` en html porque movería el `:target` del
+   * menú sin JS, que ya se compensa con `scroll-mt-16` en Header.astro.)
    */
   main,
-  main [id] {
+  main [id],
+  main :focus {
     scroll-margin-top: var(--altura-header);
   }
 
@@ -128,6 +140,24 @@
 }
 
 /* Etiqueta pequeña sobre los titulares de sección. El color lo pone cada uso. */
+/*
+ * Franja roja detrás de un texto del titular ("Los May." en el hero).
+ * Con line-height 0.9, el fondo de un inline cubre todo el área de la fuente
+ * (~1.2em) y tapaba la parte baja del renglón anterior. El degradado recorta
+ * esa franja a la banda de las mayúsculas, con el mismo aire arriba y abajo.
+ */
+@utility franja-roja {
+  background-image: linear-gradient(
+    transparent 0.2em,
+    var(--color-rojo) 0.2em,
+    var(--color-rojo) 1.1em,
+    transparent 1.1em
+  );
+  padding-inline: 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 @utility eyebrow {
   margin: 0;
   font-size: 13px;
@@ -147,12 +177,12 @@
 /* Padding vertical y horizontal de cada sección de la landing. */
 @utility section-pad {
   padding-block: clamp(56px, 8cqi, 120px);
-  padding-inline: clamp(20px, 5cqi, 80px);
+  padding-inline: var(--spacing-gutter);
 }
 
 /* Padding horizontal solo (header, footer y secciones con padding propio). */
 @utility page-gutter {
-  padding-inline: clamp(20px, 5cqi, 80px);
+  padding-inline: var(--spacing-gutter);
 }
 
 /* Contenedor centrado de 1280px dentro de cada sección. */

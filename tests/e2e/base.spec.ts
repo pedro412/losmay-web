@@ -65,11 +65,20 @@ test.describe("Carga de la página", () => {
       const medidas = await page.evaluate(() => ({
         scroll: document.documentElement.scrollWidth,
         cliente: document.documentElement.clientWidth,
-        // Elementos que se salen por la derecha (para el reporte).
+        // Elementos que se salen por la derecha (para el reporte). No cuentan
+        // los que van dentro de un carril con scroll horizontal propio (el
+        // carrusel de "Para quién es"): ahí asomar cortados es intencional.
         desbordados: [...document.querySelectorAll("body *")]
           .filter((el) => {
             const r = el.getBoundingClientRect();
-            return r.width > 0 && r.right > window.innerWidth + 0.5;
+            if (r.width === 0 || r.right <= window.innerWidth + 0.5) {
+              return false;
+            }
+            for (let p = el.parentElement; p; p = p.parentElement) {
+              const ox = getComputedStyle(p).overflowX;
+              if (ox === "auto" || ox === "scroll") return false;
+            }
+            return true;
           })
           .slice(0, 5)
           .map((el) => `${el.tagName.toLowerCase()}.${el.className}`),

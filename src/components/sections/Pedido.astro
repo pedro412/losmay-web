@@ -1,0 +1,113 @@
+---
+/**
+ * Sección "Pedido de mayoreo" (`#pedido`), docs/design/Main.dc.html.
+ *
+ * Fondo concreto con cuatro tarjetas-link por tonelaje (`pedidos` en
+ * site.ts): cada tarjeta completa es un `<a>` que abre WhatsApp con el pedido
+ * escrito. Su `aria-label` empieza con lo que se ve en grande ("16 t: pedir
+ * 16 toneladas por WhatsApp"), para que el control por voz lo reconozca
+ * (WCAG 2.5.3), y título y detalle se anuncian como descripción con
+ * `aria-describedby`. La cuadrícula es
+ * `auto-fit, minmax(260px, 1fr)` como en el diseño (con tope del 100% para que
+ * en pantallas de menos de 300px no se salga de la página).
+ *
+ * Abajo, el banner punteado para pedidos chicos, que manda a `#sucursales`.
+ *
+ * Analytics (issue #12): cada tarjeta lleva `data-track="click_whatsapp"` y
+ * `data-ubicacion` (`pedido_16t`, `pedido_24t`, `pedido_32t`,
+ * `pedido_mas32t`), que lee el listener delegado de GA4.
+ */
+import WhatsAppIcon from "../../assets/icons/whatsapp.svg";
+import Button from "../Button.astro";
+import SectionHeading from "../SectionHeading.astro";
+import {
+  minimoMayoreo,
+  pedidos,
+  sucursalesEnLetra,
+  type Pedido,
+} from "../../data/site";
+
+const tituloId = "ped-titulo";
+
+/** `ubicacion` del evento `click_whatsapp`: `pedido_16t`, `pedido_mas32t`. */
+const ubicacion = ({ ton }: Pedido): string =>
+  ton === "+32" ? "pedido_mas32t" : `pedido_${ton}t`;
+
+/** Prefijo de los ids de título y detalle de la tarjeta: `ped-pedido_16t`. */
+const idTarjeta = (pedido: Pedido): string => `ped-${ubicacion(pedido)}`;
+---
+
+<section id="pedido" aria-labelledby={tituloId} class="bg-concreto section-pad">
+  <div class="page-container">
+    <SectionHeading
+      eyebrow="Pedido de mayoreo"
+      title={`Desde ${minimoMayoreo} toneladas, en un toque.`}
+      id={tituloId}
+      tone="concreto"
+    />
+    <p class="mt-3.5 max-w-[560px] text-acero-600">
+      Elige cuántas toneladas necesitas. Se abre WhatsApp con tu pedido escrito
+      y te respondemos con cotización y fecha de entrega.
+    </p>
+
+    <ul
+      role="list"
+      class="mt-7 grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-2.5"
+    >
+      {pedidos.map((pedido) => (
+        <li class="flex">
+          <a
+            href={pedido.href}
+            target="_blank"
+            rel="noopener"
+            aria-label={pedido.aria}
+            aria-describedby={`${idTarjeta(pedido)}-titulo ${idTarjeta(pedido)}-detalle`}
+            data-track="click_whatsapp"
+            data-ubicacion={ubicacion(pedido)}
+            class="group flex min-h-24 w-full items-center gap-4 rounded-2xl bg-white py-4 pr-4 pl-5 text-grafito no-underline transition-shadow duration-150 hover:shadow-[0_6px_18px] hover:shadow-marino/12"
+          >
+            <span class="min-w-[88px] flex-none font-display text-[48px] leading-[0.9] font-extrabold text-marino">
+              {pedido.etiqueta}
+            </span>
+            <span class="flex min-w-0 flex-auto flex-col gap-0.5">
+              <span
+                id={`${idTarjeta(pedido)}-titulo`}
+                class="text-base font-bold text-grafito"
+              >
+                {pedido.titulo}
+              </span>
+              <span
+                id={`${idTarjeta(pedido)}-detalle`}
+                class="text-sm text-acero"
+              >
+                {pedido.detalle}
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              class="flex size-12 flex-none items-center justify-center rounded-full bg-whatsapp text-white transition-colors duration-150 group-hover:bg-whatsapp-hover"
+            >
+              <WhatsAppIcon width={24} height={24} class="block" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border-[1.5px] border-dashed border-borde-punteado px-5 py-[18px]">
+      <p class="flex-[1_1_280px] text-[15px] text-grafito">
+        <strong>¿Menos de {minimoMayoreo} t?</strong> Te atendemos en cualquiera
+        de nuestras {sucursalesEnLetra}.
+      </p>
+      <Button
+        href="#sucursales"
+        variant="outline-marino"
+        size="sm"
+        shape="pill"
+        class="flex-none"
+      >
+        Ver sucursales
+      </Button>
+    </div>
+  </div>
+</section>

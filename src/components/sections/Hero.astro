@@ -1,0 +1,122 @@
+---
+/**
+ * Hero de la landing (docs/design/Main.dc.html, issue #6), sobre marino.
+ *
+ * - Columna izquierda (base 520px): eyebrow con el cuadrito rojo, h1 con
+ *   "Los May." sobre la franja roja (utilidad `franja-roja`: recortada para no
+ *   tapar el renglón anterior y con `box-decoration-break: clone`), párrafo, CTAs
+ *   (WhatsApp con el mensaje general y "Ver sucursales") y sello de Holcim.
+ * - Columna derecha (base 340px): foto del producto en 4:5 con la card blanca
+ *   de la campaña de mayoreo encima.
+ *
+ * Las columnas se apilan solas con `flex-wrap` cuando no caben las dos bases
+ * más el espacio entre ellas (por debajo de ~1015px de ancho de ventana).
+ *
+ * El párrafo dice "Dos sucursales" con letra, como en el diseño; el número
+ * sale de `sucursalesEnLetra` (site.ts), que sigue a `sucursales.length`.
+ *
+ * Analytics (issue #12): el WhatsApp lleva `data-track="click_whatsapp"` y
+ * `data-ubicacion="hero"`.
+ *
+ * El ancla `#inicio` no va aquí: ya la tiene el contenedor raíz del layout
+ * (igual que en el diseño), para que el logo suba hasta el topbar.
+ *
+ * La foto es el elemento LCP: se carga con `loading="eager"` y
+ * `fetchpriority="high"`, y `sizes` sigue el ancho real de la columna:
+ * - ≥1015px (dos columnas): 340px + la mitad del espacio libre del contenedor
+ *   de 1280px, ~36vw y como máximo ~520px.
+ * - <1015px (apiladas): todo el ancho menos el gutter (`5cqi`, mínimo 20px).
+ */
+import Button from "../Button.astro";
+import HolcimSeal from "../HolcimSeal.astro";
+import Icon from "../Icon.astro";
+import ProductPhoto from "../ProductPhoto.astro";
+import {
+  mayuscula,
+  minimoMayoreo,
+  sucursalesEnLetra,
+  ui,
+  wa,
+} from "../../data/site";
+
+const sizesFoto =
+  "(min-width: 1440px) 520px, (min-width: 1015px) 36vw, (min-width: 400px) 90vw, calc(100vw - 40px)";
+---
+
+<section
+  aria-labelledby="hero-titulo"
+  class="foco-sobre-marino bg-marino py-[clamp(40px,7cqi,104px)] text-white page-gutter"
+>
+  <div class="flex flex-wrap items-center gap-[clamp(32px,5cqi,80px)] page-container">
+    <div class="min-w-0 flex-[1_1_520px]">
+      <p class="eyebrow flex items-center gap-2.5 text-marino-200">
+        <span
+          aria-hidden="true"
+          class="inline-block size-2.5 shrink-0 bg-rojo"
+        ></span>
+        Materiales para construcción · Ciudad del Carmen
+      </p>
+
+      <h1
+        id="hero-titulo"
+        class="mt-4 mb-0 display-heading text-hero tracking-[-0.005em]"
+      >
+        Construye con <span class="franja-roja">Los May.</span>
+      </h1>
+
+      <p class="mt-5 mb-0 max-w-[540px] text-[clamp(17px,1.5cqi,20px)] leading-[1.55] text-marino-100">
+        Cemento, block, varilla, arena y grava con entrega en tu obra.{" "}
+        {mayuscula(sucursalesEnLetra)} en Ciudad del Carmen para que tu obra no
+        se detenga.
+      </p>
+
+      <div class="mt-7 flex flex-wrap gap-3">
+        <Button
+          href={wa.general}
+          variant="whatsapp"
+          external
+          data-track="click_whatsapp"
+          data-ubicacion="hero"
+          class="max-w-[320px] flex-[1_1_240px]"
+        >
+          {ui.cotizarWhatsApp}
+        </Button>
+        <Button
+          href="#sucursales"
+          variant="outline-claro"
+          class="max-w-[280px] flex-[1_1_200px]"
+        >
+          Ver sucursales
+        </Button>
+      </div>
+
+      <HolcimSeal variant="borde" class="mt-7" />
+    </div>
+
+    <div class="relative min-w-0 flex-[1_1_340px]">
+      <ProductPhoto sizes={sizesFoto} loading="eager" fetchpriority="high" />
+
+      <!--
+        Card de la campaña. Es blanca, así que recupera el anillo de foco de
+        fondos claros (marino con separador blanco).
+      -->
+      <div class="absolute inset-x-3 bottom-3 flex flex-col gap-3 rounded-[14px] bg-white px-[18px] pt-4 pb-[18px] text-grafito [--foco-anillo:var(--color-marino)] [--foco-separador:var(--color-white)]">
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-[12px] font-extrabold tracking-[0.12em] text-rojo-700 uppercase">
+            Campaña de mayoreo
+          </span>
+          <span class="flex-none rounded-full bg-marino px-2.5 py-[5px] text-[12px] font-bold tracking-[0.08em] text-white uppercase">
+            Desde {minimoMayoreo} t
+          </span>
+        </div>
+        <p class="m-0 font-display text-[30px] leading-[0.95] font-extrabold text-marino uppercase">
+          Cemento Holcim directo a tu obra
+        </p>
+        <Button href="#pedido" variant="rojo" size="md" block>
+          Pedir mayoreo
+          <Icon slot="end" name="flecha-derecha" size={18} strokeWidth={2.2} />
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>

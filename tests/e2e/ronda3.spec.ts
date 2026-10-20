@@ -208,10 +208,13 @@ test.describe("Único JS de la página (issue #5)", () => {
     });
     await page.goto("/");
     const scripts = await page.evaluate(() =>
-      [...document.scripts].map((s) => ({
-        src: s.src,
-        codigo: s.textContent ?? "",
-      })),
+      // El JSON-LD de la FAQ es un `<script>` de datos, no ejecutable.
+      [...document.scripts]
+        .filter((s) => s.type !== "application/ld+json")
+        .map((s) => ({
+          src: s.src,
+          codigo: s.textContent ?? "",
+        })),
     );
     expect(scripts).toHaveLength(1);
     expect(scripts[0].codigo).toContain("data-menu-toggle");

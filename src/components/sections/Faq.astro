@@ -1,0 +1,66 @@
+---
+/**
+ * Preguntas frecuentes (`#preguntas`): acordeón con `<details>` / `<summary>`
+ * nativos, sin JavaScript. Se abre y cierra con clic, Enter o Espacio, y los
+ * lectores de pantalla anuncian si cada pregunta está expandida o contraída.
+ *
+ * El indicador `+` rojo cambia a `−` al abrir (variante `group-open`). Es
+ * decorativo (`aria-hidden`): el estado lo comunica el propio `<summary>`.
+ *
+ * Las respuestas con datos por confirmar se pintan con `<Texto>`, que resalta
+ * en amarillo los tramos entre corchetes, como en el diseño.
+ * TODO(cliente): zonas, CFDI, formas de pago y crédito (issue #15).
+ *
+ * También emite el JSON-LD `FAQPage` (solo con las respuestas confirmadas,
+ * ver `src/lib/faq-jsonld.ts`). JSON-LD dentro del `<body>` es válido para
+ * Google; el issue de SEO (#11) puede moverlo al `<head>` con el mismo helper.
+ */
+import { faq } from "../../data/site";
+import { faqJsonLd, serializarJsonLd } from "../../lib/faq-jsonld";
+import SectionHeading from "../SectionHeading.astro";
+import Texto from "../Texto.astro";
+
+const jsonLd = faqJsonLd(faq);
+---
+
+<section
+  id="preguntas"
+  aria-labelledby="faq-titulo"
+  class="bg-white section-pad"
+>
+  <div class="mx-auto max-w-[880px]">
+    <SectionHeading
+      eyebrow="Preguntas frecuentes"
+      title="Antes de pedir."
+      id="faq-titulo"
+    />
+
+    <div class="mt-7 border-t border-borde">
+      {faq.map(({ pregunta, respuesta }) => (
+        <details class="group border-b border-borde">
+          <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-3 text-lg leading-snug font-bold text-marino [&::-webkit-details-marker]:hidden">
+            {pregunta}
+            <span
+              aria-hidden="true"
+              class="w-[1ch] flex-none text-center text-[26px] leading-none font-medium text-rojo"
+            >
+              <span class="group-open:hidden">+</span>
+              <span class="hidden group-open:inline">−</span>
+            </span>
+          </summary>
+          <p class="mt-0 mb-5 text-acero">
+            <Texto texto={respuesta} />
+          </p>
+        </details>
+      ))}
+    </div>
+  </div>
+
+  {jsonLd && (
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={serializarJsonLd(jsonLd)}
+    />
+  )}
+</section>

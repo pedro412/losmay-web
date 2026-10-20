@@ -134,7 +134,11 @@ export interface Pedido {
   etiqueta: string;
   titulo: string;
   detalle: string;
-  /** Texto accesible del link. */
+  /**
+   * Nombre accesible del link. Empieza con la `etiqueta` visible ("16 t: …")
+   * para que el control por voz la reconozca (WCAG 2.5.3); título y detalle
+   * se anuncian como descripción (`aria-describedby`).
+   */
   aria: string;
   /** Link de WhatsApp con el pedido escrito. */
   href: string;
@@ -145,7 +149,7 @@ const porTonelaje = (ton: number, titulo: string, detalle: string): Pedido => ({
   etiqueta: `${ton} t`,
   titulo,
   detalle,
-  aria: `Pedir ${ton} toneladas por WhatsApp`,
+  aria: `${ton} t: pedir ${ton} toneladas por WhatsApp`,
   href: waLink(mensajes.porTonelaje(ton)),
 });
 
@@ -158,7 +162,7 @@ export const pedidos: readonly Pedido[] = [
     etiqueta: "+32 t",
     titulo: "Más de 32 toneladas",
     detalle: "Obra grande o entregas por etapa",
-    aria: "Pedir más de 32 toneladas por WhatsApp",
+    aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
     href: waLink(mensajes.masDe32),
   },
 ];
@@ -262,6 +266,34 @@ export const sucursales: readonly Sucursal[] = [
     ],
   },
 ];
+
+const numerosEnLetra = [
+  "cero",
+  "una",
+  "dos",
+  "tres",
+  "cuatro",
+  "cinco",
+  "seis",
+  "siete",
+  "ocho",
+  "nueve",
+  "diez",
+] as const;
+
+/**
+ * Número de sucursales con letra, como lo escribe el copy del diseño:
+ * `"dos sucursales"`. Lo usan el hero, el titular de Sucursales, el banner de
+ * Pedido y la FAQ, para que todos sigan a `sucursales.length`.
+ */
+export const sucursalesEnLetra = ((n: number): string => {
+  const numero = numerosEnLetra.at(n) ?? String(n);
+  return n === 1 ? `${numero} sucursal` : `${numero} sucursales`;
+})(sucursales.length);
+
+/** Primera letra en mayúscula: `"dos sucursales"` → `"Dos sucursales"`. */
+export const mayuscula = (texto: string): string =>
+  texto.charAt(0).toUpperCase() + texto.slice(1);
 
 /** Hora sin cero inicial, como en el diseño: `"07:30"` → `"7:30"`. */
 const hora = (hhmm: string): string => hhmm.replace(/^0/, "");
@@ -474,7 +506,7 @@ export interface Pregunta {
 export const faq: readonly Pregunta[] = [
   {
     pregunta: "¿Desde cuánto es mayoreo?",
-    respuesta: `Desde ${minimoMayoreo} toneladas. Para cantidades menores te atendemos en cualquiera de nuestras dos sucursales.`,
+    respuesta: `Desde ${minimoMayoreo} toneladas. Para cantidades menores te atendemos en cualquiera de nuestras ${sucursalesEnLetra}.`,
   },
   {
     pregunta: "¿Entregan en obra?",

@@ -116,10 +116,12 @@ test.describe("Navegación con teclado", () => {
       await page.keyboard.press("Shift+Tab");
       const r = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement;
-        if (el.closest("header") || el === document.body) return null;
+        // El skip link va fijo encima del header a propósito: no cuenta.
+        if (!el.closest("main, footer")) return null;
         return el.getBoundingClientRect().top;
       });
-      if (r !== null) expect(r).toBeGreaterThanOrEqual(0);
+      // Tolerancia de 1px por redondeo de subpíxeles.
+      if (r !== null) expect(r).toBeGreaterThanOrEqual(altoHeader - 1);
     }
     expect(altoHeader).toBeGreaterThan(0);
   });

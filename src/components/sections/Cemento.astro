@@ -1,0 +1,91 @@
+---
+/**
+ * "El cemento": ficha de Holcim Apasco ECOPlanet (columna izquierda) y la
+ * tarjeta "También en Los May" (columna derecha), sobre blanco. En móvil las
+ * columnas se apilan solas (flex-wrap con bases de 520 y 340 px).
+ *
+ * Datos en `cemento` y `productos` de src/data/site.ts.
+ * TODO(cliente): validar el "−35% CO₂" contra el empaque o la ficha técnica,
+ * y el catálogo completo "[confirmar con Los May]" (issue #15).
+ */
+import HolcimSeal from "../HolcimSeal.astro";
+import SectionHeading from "../SectionHeading.astro";
+import Texto from "../Texto.astro";
+import { cemento, productos } from "../../data/site";
+
+/**
+ * Barlow no trae el «₂» (U+2082), así que se parte el valor en ese carácter y
+ * el 2 se pinta como subíndice con la misma fuente.
+ */
+const SUBINDICE_2 = "₂";
+const partirSubindice = (valor: string): string[] => valor.split(SUBINDICE_2);
+---
+
+<section aria-labelledby="prod-titulo" class="section-pad bg-white">
+  <div class="page-container flex flex-wrap gap-x-[clamp(40px,6cqi,96px)] gap-y-8">
+    <div class="min-w-0 flex-[1_1_520px]">
+      <SectionHeading
+        eyebrow="El cemento"
+        title={cemento.nombre}
+        id="prod-titulo"
+        tone="claro"
+      />
+
+      <HolcimSeal variant="solido" class="mt-5" />
+
+      <p class="mt-5 max-w-[520px] text-acero">{cemento.descripcion}</p>
+
+      <dl class="mt-6 grid grid-cols-2 border-t border-borde-suave">
+        {cemento.ficha.map(({ etiqueta, valor }, i) => (
+          <div
+            class:list={[
+              "border-b border-borde-suave py-3.5",
+              i % 2 === 0 && "pr-3",
+            ]}
+          >
+            <dt class="text-[12px] font-bold tracking-[0.08em] text-acero uppercase">
+              {etiqueta}
+            </dt>
+            <dd class="mt-1 font-semibold">
+              {partirSubindice(valor).map((tramo, j) => (
+                <>
+                  {j > 0 && (
+                    <sub class="relative top-[0.2em] align-baseline text-[0.75em] leading-none">
+                      2
+                    </sub>
+                  )}
+                  {tramo}
+                </>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <ul role="list" class="mt-5 flex list-none flex-wrap gap-2 p-0">
+        {cemento.atributos.map((atributo) => (
+          <li class="rounded-full border border-borde px-3.5 py-1.5 text-[14px] font-semibold">
+            {atributo}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="flex min-w-0 flex-[1_1_340px] flex-col gap-3.5 rounded-[20px] bg-concreto p-[clamp(22px,3cqi,40px)]">
+      <h3 class="font-display text-[28px] leading-none font-bold text-marino uppercase">
+        {productos.titulo}
+      </h3>
+      <p class="text-[16px] text-acero-600">{productos.texto}</p>
+      <ul role="list" class="grid list-none grid-cols-2 gap-2 p-0">
+        {productos.lista.map((producto) => (
+          <li class="rounded-xl bg-white px-4 py-3.5 font-bold text-marino">
+            {producto}
+          </li>
+        ))}
+      </ul>
+      <p class="text-[14px] text-acero-600">
+        <Texto texto={productos.catalogo} />
+      </p>
+    </div>
+  </div>
+</section>

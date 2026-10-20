@@ -1,0 +1,72 @@
+---
+/**
+ * Sección "Para quién es" (`#para-quien`), docs/design/Main.dc.html.
+ *
+ * Cuatro tarjetas con ícono sobre cuadro marino (`paraQuien` en site.ts).
+ *
+ * El carril es el flex del diseño en todos los anchos: cada tarjeta es
+ * `flex: 1 0 min(260px, 78%)` con `overflow-x: auto` y `scroll-snap`.
+ *
+ * - Mientras las 4 tarjetas de 260px no quepan (contenedor de menos de
+ *   4 × 260 + 3 × 12 = 1076px, o sea ventana de menos de ~1196px), es un
+ *   carrusel. El carril se sale hasta los bordes de la pantalla
+ *   (`-mx-gutter` + `px-gutter`), así que la siguiente tarjeta asoma cortada
+ *   en el borde derecho: es la pista de que hay más. El `scroll-padding`
+ *   alinea cada tarjeta con el texto de la sección al hacer snap. El carril
+ *   mide exactamente el ancho de la sección, así que la página no gana
+ *   scroll horizontal.
+ * - Cuando caben, las 4 quedan en fila y crecen hasta llenar el contenedor
+ *   (a 1440px, ~311px cada una). Así ninguna baja de 260px y el título más
+ *   largo («Desarrolladores», 180px) siempre cabe.
+ *
+ * Teclado y lector de pantalla: las tarjetas no tienen nada enfocable, así
+ * que el carril es una región con nombre propio («Tipos de cliente», distinto
+ * del titular de la sección) y `tabindex="0"` para desplazarlo con las
+ * flechas. El anillo de foco va por dentro, porque por fuera quedaría fuera
+ * de la pantalla. Desde ~1196px, donde las 4 caben y no hay nada que
+ * desplazar, el carril sigue siendo un paso de tabulación: quitarlo solo ahí
+ * pediría JS (el plan, issue #17, deja como único JS el menú y GA) y quitarlo
+ * siempre dejaría el carrusel sin teclado en Safari, que no hace enfocables
+ * los contenedores con scroll.
+ */
+import Icon from "../Icon.astro";
+import SectionHeading from "../SectionHeading.astro";
+import { paraQuien } from "../../data/site";
+
+const tituloId = "pq-titulo";
+---
+
+<section
+  id="para-quien"
+  aria-labelledby={tituloId}
+  class="bg-white section-pad"
+>
+  <div class="page-container">
+    <SectionHeading
+      eyebrow="Para quién es"
+      title="Si compras cemento por volumen, esto es para ti."
+      id={tituloId}
+      tone="claro"
+      titleClass="max-w-[820px]"
+    />
+
+    <div
+      role="region"
+      aria-label="Tipos de cliente"
+      tabindex="0"
+      class="-mx-gutter mt-8 flex snap-x snap-mandatory scroll-px-gutter gap-3 overflow-x-auto overscroll-x-contain px-gutter pb-2 focus-visible:-outline-offset-3"
+    >
+      {paraQuien.map(({ icono, titulo, texto }) => (
+        <article class="flex shrink-0 grow basis-[min(260px,78%)] snap-start flex-col gap-3 rounded-[14px] border border-borde p-6">
+          <div class="flex size-12 items-center justify-center rounded-xl bg-marino text-white">
+            <Icon name={icono} size={24} strokeWidth={1.8} />
+          </div>
+          <h3 class="font-display text-[26px] leading-none font-bold text-marino uppercase">
+            {titulo}
+          </h3>
+          <p class="text-base text-acero">{texto}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

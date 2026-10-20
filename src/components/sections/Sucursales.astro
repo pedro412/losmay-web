@@ -1,0 +1,109 @@
+---
+/**
+ * Sucursales (`#sucursales`, fondo blanco): una tarjeta concreto por
+ * sucursal con nombre, dirección con pin, horarios en `<dl>` y dos botones:
+ * llamar (`tel:`, marino, muestra el teléfono) y "Cómo llegar" (Google Maps
+ * en otra pestaña, outline marino).
+ *
+ * Todo sale de `sucursales` en src/data/site.ts (direcciones, teléfonos y
+ * horarios por validar con el cliente: TODO(cliente) ahí, issue #15).
+ *
+ * La cuadrícula es `auto-fit, minmax(300px, 1fr)` como en el diseño, con
+ * `min(300px, 100%)` para que en pantallas de 320px la tarjeta no desborde.
+ * Los botones usan el tamaño `compacto` de `<Button>` (48px, letra de 17px y
+ * casi sin padding: el diseño los reparte 50/50), para que el teléfono quepa
+ * en un renglón en móvil.
+ *
+ * El titular dice el número de sucursales con letra (`sucursalesEnLetra`).
+ *
+ * Analytics (issue #12): "Llamar" lleva `data-track="click_llamar"` y
+ * "Cómo llegar" `data-track="click_como_llegar"`, los dos con
+ * `data-sucursal` (`santa_rosalia`, `santa_isabel`); "Llamar" además con
+ * `data-ubicacion="sucursales"`.
+ */
+import {
+  formatoHorario,
+  mapsLink,
+  mayuscula,
+  sucursales,
+  sucursalesEnLetra,
+  telLink,
+} from "../../data/site";
+import Button from "../Button.astro";
+import Icon from "../Icon.astro";
+import SectionHeading from "../SectionHeading.astro";
+
+/** `sucursal` de los eventos de GA4: `santa-rosalia` → `santa_rosalia`. */
+const slug = (id: string): string => id.replaceAll("-", "_");
+---
+
+<section
+  id="sucursales"
+  aria-labelledby="sucursales-titulo"
+  class="border-b border-borde-suave bg-white section-pad"
+>
+  <div class="page-container">
+    <SectionHeading
+      eyebrow="Sucursales"
+      title={`${mayuscula(sucursalesEnLetra)} en Carmen.`}
+      id="sucursales-titulo"
+    />
+
+    <ul
+      role="list"
+      class="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-3"
+    >
+      {sucursales.map((sucursal) => (
+        <li class="flex flex-col gap-4 rounded-[20px] bg-concreto p-6">
+          <h3 class="m-0 display-heading text-[32px] leading-none text-marino">
+            {sucursal.nombre}
+          </h3>
+
+          <p class="m-0 flex items-start gap-2.5 text-base text-grafito">
+            <Icon name="pin" size={20} class="mt-0.5 text-rojo" />
+            <span>{sucursal.direccion}</span>
+          </p>
+
+          <dl class="m-0 flex flex-col gap-1.5 rounded-xl bg-white px-4 py-3.5 text-[15px]">
+            {sucursal.horarios.map((horario) => (
+              <div class="flex justify-between gap-3">
+                <dt class="text-acero">{horario.etiqueta}</dt>
+                <dd class="m-0 font-bold">{formatoHorario(horario)}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div class="flex gap-2">
+            <Button
+              href={telLink(sucursal.telefono)}
+              variant="marino"
+              size="compacto"
+              shape="lg"
+              aria-label={`Llamar a ${sucursal.nombre}: ${sucursal.telefono}`}
+              data-track="click_llamar"
+              data-sucursal={slug(sucursal.id)}
+              data-ubicacion="sucursales"
+              class="flex-1"
+            >
+              <Icon name="telefono" size={18} />
+              {sucursal.telefono}
+            </Button>
+            <Button
+              href={mapsLink(sucursal.mapsQuery)}
+              variant="outline-marino"
+              size="compacto"
+              shape="lg"
+              external
+              aria-label={`Cómo llegar a ${sucursal.nombre} (abre Google Maps)`}
+              data-track="click_como_llegar"
+              data-sucursal={slug(sucursal.id)}
+              class="flex-1"
+            >
+              Cómo llegar
+            </Button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
