@@ -65,8 +65,8 @@
   --text-hero: clamp(60px, 8.6cqi, 132px);
   --text-hero--line-height: 0.9;
   --text-cta: clamp(40px, 5.6cqi, 80px);
-  /* El diseño trae 0.92, pero así el gancho del «¿» toca el renglón de abajo. */
-  --text-cta--line-height: 1.05;
+  /* Con 0.92 el gancho del «¿» toca el renglón de abajo: CtaFinal.astro lo sube. */
+  --text-cta--line-height: 0.92;
 
   --container-page: 1280px;
 
