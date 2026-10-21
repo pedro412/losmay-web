@@ -184,7 +184,7 @@ El [Campaign URL Builder](https://ga-dev-tools.google/campaign-url-builder/) arm
 - [ ] Marcar `click_whatsapp` como **evento clave** (Administrar → Eventos clave → Nuevo evento clave, nombre exacto `click_whatsapp`).
 - [ ] Probar con DebugView en `https://losmay.com/?debug_mode=1` que lleguen los tres eventos con su `ubicacion` / `sucursal`, y que en un preview de Vercel no se mande nada.
 - [ ] Recomendado: retención de datos en 14 meses (Administrar → Recopilación y conservación de datos).
-- [ ] Si se agrega una Content-Security-Policy, permitir `https://www.googletagmanager.com` en `script-src` y `https://*.google-analytics.com` y `https://*.analytics.google.com` en `connect-src`.
+- [ ] Hoy la Content-Security-Policy de `vercel.json` solo trae `frame-ancestors`. Si se le agregan `script-src` o `connect-src`, permitir `https://www.googletagmanager.com` en `script-src` y `https://*.google-analytics.com` y `https://*.analytics.google.com` en `connect-src`.
 
 El [aviso de privacidad](#aviso-de-privacidad) explica las cookies e identificadores de Google Analytics. Si se agrega un evento o se cambia qué se mide, revisa que el aviso lo siga cubriendo.
 
@@ -207,6 +207,53 @@ El texto es un **borrador** nuestro conforme a la Ley Federal de Protección de 
 - [ ] Correo o teléfono de contacto para privacidad y solicitudes ARCO.
 - [ ] Confirmar si se mandan promociones por WhatsApp o teléfono (finalidad secundaria; si no, se quita).
 - [ ] Al aprobarlo: llenar los corchetes y la fecha, poner `borrador: null` en `avisoPrivacidad` y quitar `/aviso-de-privacidad` de `seo.rutasSinIndexar` (vuelve a indexarse y a salir en el sitemap).
+
+## Deploy (Vercel)
+
+Issue [#14](https://github.com/pedro412/losmay-web/issues/14). El proyecto `losmay-web` vive en el team **Moto Isla Pro** de Vercel (plan Pro: el Hobby no permite uso comercial) y está conectado a GitHub:
+
+- Cada push a una rama con PR abierto genera un **preview** (`*.vercel.app`); el bot de Vercel deja el link en el PR.
+- Cada merge a `main` publica a **producción** (`https://losmay.com`).
+- Vercel detecta Astro solo: `npm run build`, salida `dist/`, sin adapter.
+- La versión de Node sale de `engines.node` en `package.json` (`24.x`, igual que `.nvmrc`), que gana sobre la que diga el proyecto en Vercel.
+
+Dominios, DNS y variables de entorno no se configuran desde el repo ni con la CLI: se cambian a mano en el panel de Vercel y en Hostinger (ver pendientes abajo).
+
+### `vercel.json`
+
+| Regla                  | Rutas       | Qué hace                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Caché `immutable`      | `/_astro/*` | `Cache-Control: public, max-age=31536000, immutable`. Ahí solo hay archivos con hash en el nombre (CSS, JS, fuentes, imágenes procesadas): si cambian, cambia el nombre. El resto (HTML, `og.jpg`, favicons, sitemap) se queda con la caché por defecto de Vercel, que revalida.             |
+| Headers de seguridad   | todas       | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'` (nadie puede meter la página en un iframe), `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` sin cámara, micrófono, ubicación, pagos, USB ni Topics. |
+| `trailingSlash: false` | todas       | `/aviso-de-privacidad/` redirige (308) a `/aviso-de-privacidad`, la misma URL de la canónica y los links. `trailingSlash: "never"` en `astro.config.mjs` hace que el sitemap también las liste sin diagonal.                                                                                 |
+
+HTTPS y HSTS los pone Vercel (certificado automático para cada dominio). `astro preview` no aplica `vercel.json`: las pruebas (`tests/e2e/vercel.spec.ts`) revisan la configuración contra el `dist/` compilado, y los headers reales se revisan con `curl` después del deploy.
+
+### Pendiente (manual)
+
+En Vercel (Settings → Domains del proyecto `losmay-web`):
+
+- [ ] `losmay.com` ya está asignado al proyecto: dejarlo como dominio principal de **Production**.
+- [ ] Agregar `www.losmay.com` con **Redirect to** `losmay.com` (308). El canónico es el apex, sin `www`, igual que `site` en `astro.config.mjs`.
+- [ ] Agregar `PUBLIC_GA_ID` solo en el entorno **Production** y volver a publicar (ver [Analytics](#analytics-ga4)).
+
+En Hostinger (DNS de `losmay.com`):
+
+- [ ] Registros `A` de `@`: `216.150.1.1` y `216.150.16.1`.
+- [ ] Registro `CNAME` de `www`: `2aed6b4a0bef26c4.vercel-dns-016.com`.
+- [ ] Borrar los `A`, `AAAA` o `CNAME` anteriores de `@` y `www` (los del parking o hosting de Hostinger); si quedan, parte de las visitas no llega a Vercel. No tocar `MX` ni `TXT` del correo.
+- [ ] Esperar a que Vercel marque los dos dominios como **Valid Configuration** y emita el certificado (minutos a unas horas, según la propagación).
+
+Para revisar (criterio de aceptación del #14):
+
+- [ ] `curl -I https://losmay.com` responde `200` con `strict-transport-security` y los headers de seguridad.
+- [ ] `curl -I http://losmay.com` redirige a `https://losmay.com/`.
+- [ ] `curl -I https://www.losmay.com` redirige (308) a `https://losmay.com/`.
+- [ ] `curl -I https://losmay.com/aviso-de-privacidad/` redirige (308) a `/aviso-de-privacidad`.
+- [ ] Un archivo de `/_astro/` (sale en el HTML) responde con `cache-control: public, max-age=31536000, immutable`.
+- [ ] El PR de la fase 3 tiene su preview de Vercel y en ese preview no se carga GA4.
+
+Opcional, sin activar: **Vercel Web Analytics** y **Speed Insights** para ver los Core Web Vitals de visitas reales. Se activan en el panel del proyecto y piden agregar su script; si se activan, hay que sumarlos a las remisiones del [aviso de privacidad](#aviso-de-privacidad).
 
 ## Diseño
 
