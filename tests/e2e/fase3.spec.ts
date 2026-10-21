@@ -35,6 +35,8 @@ import {
  *   Vercel y Hostinger, con los valores exactos de DNS.
  * - #16: los reportes de Lighthouse móvil están guardados y cumplen el
  *   criterio del issue.
+ * - Ronda 1 de QA: aria-current del aviso en el footer, la línea legal en
+ *   móvil y el interlineado del CTA final.
  */
 
 const raiz = fileURLToPath(new URL("../../", import.meta.url));
@@ -325,14 +327,17 @@ test.describe("Aviso de privacidad (#13)", () => {
     }
   });
 
-  test("los links sueltos del aviso (listas de links) miden 44px de alto en móvil", async ({
+  test("los links sueltos del aviso (listas de links) miden 44px de alto en móvil y escritorio", async ({
     browser,
   }) => {
-    for (const width of [320, 390]) {
+    // A 1440px los tres links caben en un renglón: sin altura mínima medían
+    // 20px. A 320px se parten en dos renglones y la caja crece con el texto.
+    for (const width of [320, 390, 1440]) {
+      const movil = width < 760;
       const contexto = await browser.newContext({
         viewport: { width, height: 800 },
-        hasTouch: true,
-        isMobile: true,
+        hasTouch: movil,
+        isMobile: movil,
       });
       const page = await contexto.newPage();
       await page.goto("/aviso-de-privacidad");
@@ -432,5 +437,91 @@ test.describe("Lighthouse móvil guardado (#16)", () => {
     }
     expect(landing.metricas.lcpMs).toBeLessThan(2500);
     expect(landing.metricas.cls).toBeLessThan(0.1);
+  });
+
+  test("en la landing no falla ninguna auditoría de accesibilidad, ni las que no cuentan para el puntaje", () => {
+    const resumen = JSON.parse(leer(archivo)) as {
+      paginas: Record<
+        string,
+        { mediana: { fallidas: Record<string, string[]> } }
+      >;
+    };
+    // `label-content-name-mismatch` marcaba las tarjetas de Pedido mientras
+    // llevaban un aria-label distinto de su texto visible (QA ronda 1).
+    expect(resumen.paginas["/"].mediana.fallidas.accessibility).toEqual([]);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* QA ronda 1: footer, CTA final y tarjetas de Pedido                         */
+/* -------------------------------------------------------------------------- */
+
+test.describe("QA ronda 1 (fase 3)", () => {
+  const lineaLegal = (page: Page) =>
+    page.locator("footer p").filter({ hasText: "©" });
+
+  test("en la página del aviso, su link del footer lleva aria-current=page", async ({
+    page,
+  }) => {
+    await page.goto("/aviso-de-privacidad");
+    await expect(
+      page.locator("footer a[href='/aviso-de-privacidad']"),
+    ).toHaveAttribute("aria-current", "page");
+    await page.goto("/");
+    await expect(
+      page.locator("footer a[href='/aviso-de-privacidad']"),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  for (const width of [320, 390]) {
+    test(`a ${width}px la línea legal no termina en «·»: el link va solo en su renglón`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      const linea = lineaLegal(page);
+      await expect(linea.locator("span[aria-hidden='true']")).toBeHidden();
+      const link = linea.getByRole("link", { name: "Aviso de privacidad" });
+      const caja = (await link.boundingBox())!;
+      const texto = await linea.evaluate((p) => {
+        const rango = document.createRange();
+        rango.setStart(p.firstChild!, 0);
+        rango.setEnd(p.firstChild!, p.firstChild!.textContent!.length);
+        return rango.getBoundingClientRect().bottom;
+      });
+      // El link empieza debajo del «© …» (su caja de 44px se mete 12px
+      // arriba con margen negativo).
+      expect(caja.y + 12).toBeGreaterThanOrEqual(texto - 1);
+    });
+  }
+
+  test("a 1440px el «·» se ve y el link va en el mismo renglón", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const linea = lineaLegal(page);
+    await expect(linea.locator("span[aria-hidden='true']")).toBeVisible();
+    expect((await linea.boundingBox())!.height).toBeLessThan(25);
+  });
+
+  test("el titular del CTA final lleva el interlineado del diseño y el «¿» subido", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/");
+    const h2 = page.locator("#cta-titulo");
+    await expect(h2).toHaveAccessibleName("¿Cuántas toneladas necesitas?");
+    const { alto, tamano, subida } = await h2.evaluate((h) => {
+      const s = getComputedStyle(h);
+      const q = h.querySelector("span")!;
+      return {
+        alto: parseFloat(s.lineHeight),
+        tamano: parseFloat(s.fontSize),
+        subida: parseFloat(getComputedStyle(q).top),
+      };
+    });
+    expect(alto / tamano).toBeCloseTo(0.92, 2);
+    expect(subida / tamano).toBeCloseTo(-0.12, 2);
   });
 });

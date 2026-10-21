@@ -553,28 +553,24 @@ test.describe("Pedido de mayoreo (#7)", () => {
       ton: "16 t",
       titulo: "Mínimo de mayoreo",
       detalle: "Entrega programada en obra",
-      aria: "16 t: pedir 16 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 16 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "24 t",
       titulo: "Entrega en obra",
       detalle: "Fecha y horario a tu medida",
-      aria: "24 t: pedir 24 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 24 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "32 t",
       titulo: "Entrega en obra",
       detalle: "En una o varias entregas",
-      aria: "32 t: pedir 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 32 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "+32 t",
       titulo: "Más de 32 toneladas",
       detalle: "Obra grande o entregas por etapa",
-      aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar más de 32 toneladas de cemento Holcim. Necesito aproximadamente: ",
     },
   ];
@@ -595,7 +591,7 @@ test.describe("Pedido de mayoreo (#7)", () => {
   });
 
   for (const viewport of [MOVIL, ESCRITORIO]) {
-    test(`tarjetas-link: texto, aria-label y WhatsApp decodificado a ${viewport.width}px`, async ({
+    test(`tarjetas-link: texto, nombre accesible y WhatsApp decodificado a ${viewport.width}px`, async ({
       page,
     }) => {
       await page.setViewportSize(viewport);
@@ -605,14 +601,25 @@ test.describe("Pedido de mayoreo (#7)", () => {
       await expect(links).toHaveCount(4);
       for (const [i, t] of TARJETAS.entries()) {
         const link = links.nth(i);
-        await expect(link).toHaveAccessibleName(t.aria);
-        // El nombre empieza con lo que se ve en grande (WCAG 2.5.3) y el
-        // título y el detalle se anuncian como descripción.
-        expect(t.aria.startsWith(`${t.ton}: `)).toBe(true);
-        await expect(link).toHaveAccessibleDescription(
-          `${t.titulo} ${t.detalle}`,
+        // Sin aria-label: el nombre es todo el texto visible (WCAG 2.5.3,
+        // Lighthouse `label-content-name-mismatch`) más un final solo para
+        // lectores de pantalla.
+        await expect(link).not.toHaveAttribute("aria-label");
+        await expect(link).toHaveAccessibleName(
+          `${t.ton} ${t.titulo} ${t.detalle} — pedir por WhatsApp`,
         );
-        expect(await texto(link)).toBe(`${t.ton} ${t.titulo} ${t.detalle}`);
+        expect(
+          await link.evaluate((a) =>
+            [...a.querySelectorAll("span:not(.sr-only)")]
+              .filter((s) => !s.querySelector("span"))
+              .map((s) => s.textContent!.trim())
+              .filter(Boolean)
+              .join(" "),
+          ),
+        ).toBe(`${t.ton} ${t.titulo} ${t.detalle}`);
+        await expect(link.locator(".sr-only")).toHaveText(
+          "— pedir por WhatsApp",
+        );
         const wa = leerWhatsApp((await link.getAttribute("href"))!);
         expect(wa.host).toBe("wa.me");
         expect(wa.numero).toBe(WHATSAPP);
@@ -1239,7 +1246,7 @@ test.describe("CTA final (#10)", () => {
       expect(
         parseFloat(await css(h2, "line-height")) /
           parseFloat(await css(h2, "font-size")),
-      ).toBeCloseTo(1.05, 2);
+      ).toBeCloseTo(0.92, 2);
       const wa = seccion(page, "cta-titulo").getByRole("link", {
         name: "Cotizar por WhatsApp",
       });
