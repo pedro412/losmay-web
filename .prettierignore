@@ -4,3 +4,5 @@ node_modules/
 package-lock.json
 # Diseño de referencia exportado: se lee como especificación, no se formatea.
 docs/design/
+# Reportes de Lighthouse generados por `npm run qa:lighthouse`.
+docs/qa/

@@ -15,8 +15,8 @@
  * El párrafo dice "Dos sucursales" con letra, como en el diseño; el número
  * sale de `sucursalesEnLetra` (site.ts), que sigue a `sucursales.length`.
  *
- * Analytics (issue #12): el WhatsApp lleva `data-track="click_whatsapp"` y
- * `data-ubicacion="hero"`.
+ * Analytics (issue #12): el WhatsApp lleva `click_whatsapp` con
+ * `ubicacion="hero"` (atributos de `track()`).
  *
  * El ancla `#inicio` no va aquí: ya la tiene el contenedor raíz del layout
  * (igual que en el diseño), para que el logo suba hasta el topbar.
@@ -38,6 +38,7 @@ import {
   ui,
   wa,
 } from "../../data/site";
+import { track } from "../../lib/analytics";
 
 const sizesFoto =
   "(min-width: 1440px) 520px, (min-width: 1015px) 36vw, (min-width: 400px) 90vw, calc(100vw - 40px)";
@@ -75,8 +76,7 @@ const sizesFoto =
           href={wa.general}
           variant="whatsapp"
           external
-          data-track="click_whatsapp"
-          data-ubicacion="hero"
+          {...track("click_whatsapp", { ubicacion: "hero" })}
           class="max-w-[320px] flex-[1_1_240px]"
         >
           {ui.cotizarWhatsApp}

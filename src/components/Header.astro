@@ -25,12 +25,32 @@
  * se muestra con `:target`, y «Cerrar menú» va a `#barra-movil` (la fila del
  * header, que ya está a la vista, así que no mueve la página). Tocar un link
  * del menú también lo cierra, porque cambia el `:target`.
+ *
+ * Analytics (issue #12): los botones de WhatsApp de la barra (redondo y
+ * verde) llevan `click_whatsapp` con `ubicacion="header"`, y el del panel
+ * móvil con `ubicacion="menu_movil"` (atributos de `track()`).
+ *
+ * Header simplificado (`simple`, para páginas fuera de la landing como el
+ * aviso de privacidad, issue #13): solo el logo, que lleva al inicio, y el
+ * botón de WhatsApp. Sin links a las secciones ni hamburguesa (y por lo tanto
+ * sin menú móvil ni su script). Las alturas son las mismas que las del header
+ * completo (64px en móvil, 100px en escritorio), así que `--altura-header`
+ * sigue valiendo. Como sobra espacio, el botón verde se ve completo desde
+ * 760px.
  */
 import WhatsAppIcon from "../assets/icons/whatsapp.svg";
 import { menu, ui, wa } from "../data/site";
+import { track } from "../lib/analytics";
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 import Logo from "./Logo.astro";
+
+interface Props {
+  /** Solo logo y WhatsApp (páginas fuera de la landing). */
+  simple?: boolean;
+}
+
+const { simple = false } = Astro.props;
 
 // Fuera de la landing (p. ej. el aviso de privacidad) los anchors apuntan a
 // la página principal.
@@ -42,6 +62,9 @@ const claseWhatsAppRedondo =
 // Hamburguesa (44px). La comparten el botón y su respaldo sin JS.
 const claseBotonMenu =
   "flex size-11 items-center justify-center rounded-full border-[1.5px] border-borde bg-white p-0 text-marino";
+// Atributos de GA4 de los botones de WhatsApp.
+const trackHeader = track("click_whatsapp", { ubicacion: "header" });
+const trackMenuMovil = track("click_whatsapp", { ubicacion: "menu_movil" });
 const links = menu.map(({ label, href }) => ({
   label,
   href: enInicio ? href : `/${href}`,
@@ -67,43 +90,48 @@ const links = menu.map(({ label, href }) => ({
         rel="noopener"
         aria-label={ui.cotizarWhatsApp}
         class={claseWhatsAppRedondo}
+        {...trackHeader}
       >
         <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
       </a>
-      <button
-        type="button"
-        aria-label={ui.abrirMenu}
-        aria-expanded="false"
-        aria-controls="menu-movil"
-        class:list={["group cursor-pointer", claseBotonMenu]}
-        data-menu-toggle
-        data-label-abrir={ui.abrirMenu}
-        data-label-cerrar={ui.cerrarMenu}
-      >
-        <Icon name="menu" size={22} class="group-aria-expanded:hidden" />
-        <Icon
-          name="cerrar"
-          size={22}
-          class="hidden group-aria-expanded:block"
-        />
-      </button>
-      <!-- Respaldo sin JavaScript (ocultos si hay JS; ver el <style>) -->
-      <a
-        href="#menu-movil"
-        aria-label={ui.abrirMenu}
-        class:list={["hidden", claseBotonMenu]}
-        data-menu-sin-js="abrir"
-      >
-        <Icon name="menu" size={22} />
-      </a>
-      <a
-        href="#barra-movil"
-        aria-label={ui.cerrarMenu}
-        class:list={["hidden", claseBotonMenu]}
-        data-menu-sin-js="cerrar"
-      >
-        <Icon name="cerrar" size={22} />
-      </a>
+      {!simple && (
+        <>
+          <button
+            type="button"
+            aria-label={ui.abrirMenu}
+            aria-expanded="false"
+            aria-controls="menu-movil"
+            class:list={["group cursor-pointer", claseBotonMenu]}
+            data-menu-toggle
+            data-label-abrir={ui.abrirMenu}
+            data-label-cerrar={ui.cerrarMenu}
+          >
+            <Icon name="menu" size={22} class="group-aria-expanded:hidden" />
+            <Icon
+              name="cerrar"
+              size={22}
+              class="hidden group-aria-expanded:block"
+            />
+          </button>
+          <!-- Respaldo sin JavaScript (ocultos si hay JS; ver el <style>) -->
+          <a
+            href="#menu-movil"
+            aria-label={ui.abrirMenu}
+            class:list={["hidden", claseBotonMenu]}
+            data-menu-sin-js="abrir"
+          >
+            <Icon name="menu" size={22} />
+          </a>
+          <a
+            href="#barra-movil"
+            aria-label={ui.cerrarMenu}
+            class:list={["hidden", claseBotonMenu]}
+            data-menu-sin-js="cerrar"
+          >
+            <Icon name="cerrar" size={22} />
+          </a>
+        </>
+      )}
     </div>
   </div>
 
@@ -111,70 +139,100 @@ const links = menu.map(({ label, href }) => ({
     Menú móvil: oculto hasta que se abre (con JS, `data-abierto`; sin JS,
     `:target`). `scroll-mt-16` evita que el `:target` mueva la página.
   -->
-  <nav
-    id="menu-movil"
-    aria-label="Menú"
-    class="absolute inset-x-0 top-16 hidden max-h-[calc(100dvh-4rem)] scroll-mt-16 flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px] shadow-marino/18 max-md:data-abierto:flex"
-    data-menu
-  >
-    {links.map(({ label, href }) => (
-      <a
-        href={href}
-        class="flex min-h-14 items-center justify-between border-b border-borde-tenue font-display text-2xl font-bold text-marino uppercase no-underline"
+  {!simple && (
+    <nav
+      id="menu-movil"
+      aria-label="Menú"
+      class="absolute inset-x-0 top-16 hidden max-h-[calc(100dvh-4rem)] scroll-mt-16 flex-col overflow-y-auto overscroll-contain border-b border-borde-suave bg-white px-4 pt-1 pb-5 shadow-[0_18px_32px] shadow-marino/18 max-md:data-abierto:flex"
+      data-menu
+    >
+      {links.map(({ label, href }) => (
+        <a
+          href={href}
+          class="flex min-h-14 items-center justify-between border-b border-borde-tenue font-display text-2xl font-bold text-marino uppercase no-underline"
+        >
+          {label}
+          <Icon
+            name="chevron-derecha"
+            size={20}
+            strokeWidth={2.2}
+            class="text-rojo"
+          />
+        </a>
+      ))}
+      <Button
+        href={wa.general}
+        variant="whatsapp"
+        external
+        block
+        class="mt-4"
+        {...trackMenuMovil}
       >
-        {label}
-        <Icon
-          name="chevron-derecha"
-          size={20}
-          strokeWidth={2.2}
-          class="text-rojo"
-        />
-      </a>
-    ))}
-    <Button href={wa.general} variant="whatsapp" external block class="mt-4">
-      {ui.cotizarWhatsApp}
-    </Button>
-  </nav>
+        {ui.cotizarWhatsApp}
+      </Button>
+    </nav>
+  )}
 
   <!-- Escritorio -->
   <div class="hidden items-center justify-between gap-4 py-3.5 page-gutter md:flex lg:gap-6 xl:gap-8">
     <a href={inicio} aria-label={ui.irAlInicio} class="block shrink-0">
       <Logo class="w-[164px]" decorative />
     </a>
-    <nav
-      aria-label="Principal"
-      class="flex items-center gap-3 lg:gap-6 xl:gap-8"
-    >
-      {links.map(({ label, href }) => (
-        <a
-          href={href}
-          class="py-2.5 text-[15px] font-semibold whitespace-nowrap text-grafito no-underline decoration-rojo decoration-2 underline-offset-[6px] hover:underline"
-        >
-          {label}
-        </a>
-      ))}
-      <a
+    {simple ? (
+      <Button
         href={wa.general}
-        target="_blank"
-        rel="noopener"
-        aria-label={ui.cotizarWhatsApp}
-        class:list={[claseWhatsAppRedondo, "lg:hidden"]}
+        variant="whatsapp"
+        size="sm"
+        shape="pill"
+        external
+        class="whitespace-nowrap"
+        {...trackHeader}
       >
-        <WhatsAppIcon width={22} height={22} aria-hidden="true" class="block" />
-      </a>
-      <div class="hidden lg:block">
-        <Button
+        {ui.cotizarWhatsApp}
+      </Button>
+    ) : (
+      <nav
+        aria-label="Principal"
+        class="flex items-center gap-3 lg:gap-6 xl:gap-8"
+      >
+        {links.map(({ label, href }) => (
+          <a
+            href={href}
+            class="py-2.5 text-[15px] font-semibold whitespace-nowrap text-grafito no-underline decoration-rojo decoration-2 underline-offset-[6px] hover:underline"
+          >
+            {label}
+          </a>
+        ))}
+        <a
           href={wa.general}
-          variant="whatsapp"
-          size="sm"
-          shape="pill"
-          external
-          class="whitespace-nowrap"
+          target="_blank"
+          rel="noopener"
+          aria-label={ui.cotizarWhatsApp}
+          class:list={[claseWhatsAppRedondo, "lg:hidden"]}
+          {...trackHeader}
         >
-          {ui.cotizarWhatsApp}
-        </Button>
-      </div>
-    </nav>
+          <WhatsAppIcon
+            width={22}
+            height={22}
+            aria-hidden="true"
+            class="block"
+          />
+        </a>
+        <div class="hidden lg:block">
+          <Button
+            href={wa.general}
+            variant="whatsapp"
+            size="sm"
+            shape="pill"
+            external
+            class="whitespace-nowrap"
+            {...trackHeader}
+          >
+            {ui.cotizarWhatsApp}
+          </Button>
+        </div>
+      </nav>
+    )}
   </div>
 </header>
 

@@ -27,10 +27,3 @@ export function faqJsonLd(preguntas: readonly Pregunta[]) {
     })),
   };
 }
-
-/**
- * Serializa el JSON-LD para un `<script type="application/ld+json">`. Escapa
- * `<` para que ningún texto pueda cerrar la etiqueta `</script>`.
- */
-export const serializarJsonLd = (datos: object): string =>
-  JSON.stringify(datos).replace(/</g, "\\u003c");

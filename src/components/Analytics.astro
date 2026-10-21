@@ -1,0 +1,85 @@
+---
+/**
+ * Google Analytics 4 (issue #12). Va en el `<head>` de `BaseLayout`.
+ *
+ * Solo se renderiza en un build de producción con `PUBLIC_GA_ID` y fuera de
+ * los previews de Vercel (ver `idGa` en src/lib/analytics.ts). Aun así, el
+ * script revisa el dominio antes de hacer nada: en localhost (`astro
+ * preview`) o en `*.vercel.app` no carga `gtag.js` ni manda eventos.
+ *
+ * En losmay.com:
+ * 1. Deja en `dataLayer` la vista de página (`config`) desde el principio.
+ *    Con `?debug_mode=1` en la URL los hits salen en DebugView de GA4.
+ * 2. Carga `gtag.js` con `async` (sin Partytown: es un solo script) hasta
+ *    después del evento `load` (QA de performance, issue #16): así sus
+ *    ~150 KB no compiten en 4G con la foto del hero (LCP) ni con las
+ *    fuentes. Lo que se haya mandado antes se queda en `dataLayer` y
+ *    `gtag.js` lo procesa al cargar, sin perder la vista ni los clics.
+ * 3. Un listener en `document` manda `click_whatsapp`, `click_llamar` y
+ *    `click_como_llegar` al tocar un link con `data-track`, con los
+ *    parámetros de `parametrosGa` leídos de sus `data-*` (los pone `track()`).
+ *
+ * Es `is:inline` para que no exista ni un byte de este JS en los builds sin
+ * Analytics, y para no sumar un módulo aparte al de la página.
+ */
+import { hostsGa, idGa, parametrosGa } from "../lib/analytics";
+
+const id = idGa({
+  id: import.meta.env.PUBLIC_GA_ID,
+  prod: import.meta.env.PROD,
+  vercelEnv: process.env.VERCEL_ENV,
+});
+---
+
+{id && <script
+  is:inline
+  data-analytics
+  define:vars={{ id, hosts: hostsGa, parametros: parametrosGa }}
+>
+  if (hosts.indexOf(location.hostname) !== -1) {
+    window.dataLayer = window.dataLayer || [];
+    var gtag = function () {
+      window.dataLayer.push(arguments);
+    };
+    window.gtag = gtag;
+    gtag("js", new Date());
+    gtag(
+      "config",
+      id,
+      /[?&]debug_mode=1(&|$)/.test(location.search) ? { debug_mode: true } : {},
+    );
+
+    var cargarGtag = function () {
+      var gtagJs = document.createElement("script");
+      gtagJs.async = true;
+      gtagJs.src =
+        "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
+      document.head.appendChild(gtagJs);
+    };
+    if (document.readyState === "complete") cargarGtag();
+    else window.addEventListener("load", cargarGtag, { once: true });
+
+    document.addEventListener(
+      "click",
+      function (evento) {
+        var link =
+          evento.target instanceof Element
+            ? evento.target.closest("[data-track]")
+            : null;
+        if (!link) return;
+        var nombre = link.getAttribute("data-track");
+        var claves = Object.prototype.hasOwnProperty.call(parametros, nombre)
+          ? parametros[nombre]
+          : null;
+        if (!claves) return;
+        var datos = {};
+        claves.forEach(function (clave) {
+          var valor = link.getAttribute("data-" + clave);
+          if (valor) datos[clave] = valor;
+        });
+        gtag("event", nombre, datos);
+      },
+      true,
+    );
+  }
+</script>}

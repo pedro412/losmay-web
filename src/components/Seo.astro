@@ -1,0 +1,76 @@
+---
+/**
+ * Metadatos de SEO y de redes del `<head>`: description, canonical, robots,
+ * Open Graph (WhatsApp, Facebook), Twitter card, manifest y JSON-LD.
+ *
+ * Los valores por defecto salen de `seo` en `src/data/site.ts`. Las URLs son
+ * absolutas sobre `site` de `astro.config.mjs` (https://losmay.com), también
+ * en los previews de Vercel: WhatsApp y Google solo aceptan URLs absolutas, y
+ * la canónica tiene que ser siempre la del dominio.
+ *
+ * Las rutas de `seo.rutasSinIndexar` llevan `noindex` (y el sitemap las deja
+ * fuera, ver `astro.config.mjs`).
+ */
+import { negocio, seo, sinIndexar } from "../data/site";
+import { serializarJsonLd } from "../lib/jsonld";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Fuerza `noindex` aunque la ruta no esté en `seo.rutasSinIndexar`. */
+  noindex?: boolean;
+  /** Bloques de JSON-LD; los `null` se omiten. */
+  jsonLd?: readonly (object | null)[];
+}
+
+const {
+  title,
+  description = seo.descripcion,
+  noindex = sinIndexar(Astro.url.pathname),
+  jsonLd = [],
+} = Astro.props;
+
+const site = Astro.site ?? new URL(negocio.url);
+// Sin la diagonal final (menos en la raíz), igual que los links internos
+// (`/aviso-de-privacidad`): el build en formato `directory` da
+// `/aviso-de-privacidad/` como pathname.
+const ruta = Astro.url.pathname.replace(/(.)\/+$/, "$1");
+const canonical = new URL(ruta, site).href;
+const imagen = new URL(seo.imagen.src, site).href;
+---
+
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+<link rel="manifest" href="/manifest.webmanifest" />
+
+<!-- Open Graph: vista previa al compartir por WhatsApp y Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={negocio.nombreCorto} />
+<meta property="og:locale" content={seo.locale} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imagen} />
+<meta property="og:image:secure_url" content={imagen} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content={String(seo.imagen.ancho)} />
+<meta property="og:image:height" content={String(seo.imagen.alto)} />
+<meta property="og:image:alt" content={seo.imagen.alt} />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imagen} />
+<meta name="twitter:image:alt" content={seo.imagen.alt} />
+
+{jsonLd
+  .filter((datos): datos is object => datos !== null)
+  .map((datos) => (
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={serializarJsonLd(datos)}
+    />
+  ))}

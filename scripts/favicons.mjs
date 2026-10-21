@@ -5,6 +5,9 @@
 // - public/favicon.ico: 16, 32 y 48 px (PNG dentro del ICO).
 // - public/apple-touch-icon.png: 180 px, cuadrado y sin transparencia (iOS
 //   aplica su propia máscara), con los grosores originales del logo.
+// - public/icon-192.png y public/icon-512.png: los del manifest
+//   (src/pages/manifest.webmanifest.ts) y el logo del JSON-LD. Mismo dibujo
+//   que el apple-touch-icon.
 //
 // Uso: npm run favicons
 import { writeFile } from "node:fs/promises";
@@ -84,11 +87,17 @@ await writeFile(
     ),
   ),
 );
-await writeFile(
-  "public/apple-touch-icon.png",
-  await sharp(await render(apple, 180))
-    .flatten({ background: MARINO })
-    .png({ compressionLevel: 9 })
-    .toBuffer(),
-);
+for (const [archivo, size] of /** @type {const} */ ([
+  ["apple-touch-icon.png", 180],
+  ["icon-192.png", 192],
+  ["icon-512.png", 512],
+])) {
+  await writeFile(
+    `public/${archivo}`,
+    await sharp(await render(apple, size))
+      .flatten({ background: MARINO })
+      .png({ compressionLevel: 9 })
+      .toBuffer(),
+  );
+}
 console.log("Favicons generados en public/");

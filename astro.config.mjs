@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
+import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
+import { negocio, sinIndexar } from "./src/data/site.ts";
 
 // Subconjunto latino de Fontsource: cubre español (á, é, ñ, ¿, ¡) sin
 // descargar cirílico ni vietnamita.
@@ -28,6 +30,28 @@ const variants = (pkg, file, weights) =>
 export default defineConfig({
   // Sitio 100% estático, sin adapter (se sirve desde Vercel como archivos).
   output: "static",
+  // URLs sin diagonal final, igual que la canónica, los links internos y
+  // `trailingSlash: false` de vercel.json (que redirige `/ruta/` → `/ruta`).
+  // Así el sitemap tampoco lista URLs con diagonal que terminarían en un 308.
+  trailingSlash: "never",
+  // Dominio de producción: base de la canónica, de las URLs de Open Graph y
+  // JSON-LD, del sitemap y del robots.txt.
+  site: negocio.url,
+  build: {
+    // QA de performance (issue #16): el CSS (~7 KB con gzip) va dentro del
+    // HTML y no en un archivo aparte que bloquea el primer pintado. En 4G
+    // lenta ahorra una ida y vuelta antes de pintar (Lighthouse: «Render
+    // blocking requests»). Es una landing de una sola página, así que casi
+    // no se pierde la caché compartida entre páginas.
+    inlineStylesheets: "always",
+  },
+  integrations: [
+    // `/sitemap-index.xml` con todas las páginas, menos las que no se indexan
+    // (`seo.rutasSinIndexar` en src/data/site.ts).
+    sitemap({
+      filter: (pagina) => !sinIndexar(new URL(pagina).pathname),
+    }),
+  ],
   fonts: [
     {
       provider: fontProviders.local(),

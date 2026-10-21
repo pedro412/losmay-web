@@ -5,6 +5,7 @@ import {
   pedidos,
   sucursales,
   telLink,
+  ui,
   waLink,
 } from "../../src/data/site";
 import {
@@ -64,7 +65,10 @@ test.describe("Links de WhatsApp", () => {
   test("tarjetas por tonelaje y CTA final con su mensaje", async ({ page }) => {
     await page.goto("/");
     for (const pedido of pedidos) {
-      const link = page.getByRole("link", { name: pedido.aria });
+      const link = page.getByRole("link", {
+        name: `${pedido.etiqueta} ${pedido.titulo} ${pedido.detalle} — ${ui.pedirPorWhatsApp}`,
+        exact: true,
+      });
       await expect(link).toHaveAttribute("href", pedido.href);
     }
     const cta = page

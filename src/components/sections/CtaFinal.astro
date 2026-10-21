@@ -6,16 +6,19 @@
  *   `site.ts` (`wa.mayoreo`).
  * - "Ver opciones de pedido" baja a las tarjetas por tonelaje (`#pedido`).
  *
- * Analytics (issue #12): el WhatsApp lleva `data-track="click_whatsapp"` y
- * `data-ubicacion="cta_final"`.
+ * Analytics (issue #12): el WhatsApp lleva `click_whatsapp` con
+ * `ubicacion="cta_final"` (atributos de `track()`).
  *
- * El titular va con interlineado 1.05 en lugar del 0.92 del diseño: con 0.92 el
- * gancho del «¿» toca la «N» del renglón de abajo y se lee «ÑECESITAS».
+ * El titular lleva el interlineado 0.92 del diseño. Con ese interlineado el
+ * gancho del «¿», que baja de la línea base, toca la letra del renglón de
+ * abajo (se leía «ÑECESITAS»), así que el «¿» sube 0.12em. El texto y el
+ * nombre accesible del titular no cambian.
  *
  * En escritorio el texto y los botones van lado a lado; en móvil se apilan
  * (flex-wrap con las bases del diseño: 480px y 280px).
  */
 import { ui, wa } from "../../data/site";
+import { track } from "../../lib/analytics";
 import Button from "../Button.astro";
 ---
 
@@ -26,7 +29,8 @@ import Button from "../Button.astro";
   <div class="flex flex-wrap items-center justify-between gap-x-12 gap-y-6 page-container">
     <div class="min-w-0 flex-[1_1_480px]">
       <h2 id="cta-titulo" class="m-0 display-heading text-cta">
-        ¿Cuántas toneladas necesitas?
+        <span class="relative -top-[0.12em]">¿</span>Cuántas toneladas
+        necesitas?
       </h2>
       <p class="mt-3 mb-0 text-[17px] text-marino-100">
         Mándanos tu pedido y te respondemos con cotización y fecha de entrega.
@@ -41,8 +45,7 @@ import Button from "../Button.astro";
         block
         external
         href={wa.mayoreo}
-        data-track="click_whatsapp"
-        data-ubicacion="cta_final"
+        {...track("click_whatsapp", { ubicacion: "cta_final" })}
       >
         {ui.cotizarWhatsApp}
       </Button>

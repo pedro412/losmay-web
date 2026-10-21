@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { GA_ID_PRUEBA } from "./tests/e2e/helpers";
 
 /**
  * Pruebas e2e contra el sitio compilado (`astro build` + `astro preview`),
@@ -33,5 +34,10 @@ export default defineConfig({
     // puerto está ocupado, Playwright falla con un error claro.
     reuseExistingServer: false,
     timeout: 180_000,
+    // Compila con un ID de GA4 falso para que exista el script de Analytics.
+    // En localhost no carga nada; `analytics.spec.ts` sirve el build como si
+    // fuera losmay.com e intercepta las requests a Google (no sale nada a la
+    // red). Una variable del proceso gana sobre la de un `.env` local.
+    env: { PUBLIC_GA_ID: GA_ID_PRUEBA },
   },
 });

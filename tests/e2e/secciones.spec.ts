@@ -553,28 +553,24 @@ test.describe("Pedido de mayoreo (#7)", () => {
       ton: "16 t",
       titulo: "Mínimo de mayoreo",
       detalle: "Entrega programada en obra",
-      aria: "16 t: pedir 16 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 16 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "24 t",
       titulo: "Entrega en obra",
       detalle: "Fecha y horario a tu medida",
-      aria: "24 t: pedir 24 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 24 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "32 t",
       titulo: "Entrega en obra",
       detalle: "En una o varias entregas",
-      aria: "32 t: pedir 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar 32 toneladas de cemento Holcim. Mi obra está en: ",
     },
     {
       ton: "+32 t",
       titulo: "Más de 32 toneladas",
       detalle: "Obra grande o entregas por etapa",
-      aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
       msg: "Hola Los May, quiero cotizar más de 32 toneladas de cemento Holcim. Necesito aproximadamente: ",
     },
   ];
@@ -595,7 +591,7 @@ test.describe("Pedido de mayoreo (#7)", () => {
   });
 
   for (const viewport of [MOVIL, ESCRITORIO]) {
-    test(`tarjetas-link: texto, aria-label y WhatsApp decodificado a ${viewport.width}px`, async ({
+    test(`tarjetas-link: texto, nombre accesible y WhatsApp decodificado a ${viewport.width}px`, async ({
       page,
     }) => {
       await page.setViewportSize(viewport);
@@ -605,14 +601,25 @@ test.describe("Pedido de mayoreo (#7)", () => {
       await expect(links).toHaveCount(4);
       for (const [i, t] of TARJETAS.entries()) {
         const link = links.nth(i);
-        await expect(link).toHaveAccessibleName(t.aria);
-        // El nombre empieza con lo que se ve en grande (WCAG 2.5.3) y el
-        // título y el detalle se anuncian como descripción.
-        expect(t.aria.startsWith(`${t.ton}: `)).toBe(true);
-        await expect(link).toHaveAccessibleDescription(
-          `${t.titulo} ${t.detalle}`,
+        // Sin aria-label: el nombre es todo el texto visible (WCAG 2.5.3,
+        // Lighthouse `label-content-name-mismatch`) más un final solo para
+        // lectores de pantalla.
+        await expect(link).not.toHaveAttribute("aria-label");
+        await expect(link).toHaveAccessibleName(
+          `${t.ton} ${t.titulo} ${t.detalle} — pedir por WhatsApp`,
         );
-        expect(await texto(link)).toBe(`${t.ton} ${t.titulo} ${t.detalle}`);
+        expect(
+          await link.evaluate((a) =>
+            [...a.querySelectorAll("span:not(.sr-only)")]
+              .filter((s) => !s.querySelector("span"))
+              .map((s) => s.textContent!.trim())
+              .filter(Boolean)
+              .join(" "),
+          ),
+        ).toBe(`${t.ton} ${t.titulo} ${t.detalle}`);
+        await expect(link.locator(".sr-only")).toHaveText(
+          "— pedir por WhatsApp",
+        );
         const wa = leerWhatsApp((await link.getAttribute("href"))!);
         expect(wa.host).toBe("wa.me");
         expect(wa.numero).toBe(WHATSAPP);
@@ -723,7 +730,7 @@ test.describe("Tu pedido en obra (#8)", () => {
       "Acordamos día y horario según el avance de tu obra.",
     );
     await expect(s).toContainText(
-      "Llevamos el cemento a tu obra en Ciudad del Carmen y [zonas cercanas].",
+      "Llevamos el cemento a tu obra en Ciudad del Carmen y municipios aledaños.",
     );
     await expect(s).toContainText("Tu proyecto, nuestra prioridad");
     for (const n of ["01", "02", "03"]) await expect(s).toContainText(n);
@@ -812,7 +819,9 @@ test.describe("El cemento (#8)", () => {
       "Arena",
       "Grava",
     ]);
-    await expect(s).toContainText("Catálogo completo: [confirmar con Los May]");
+    await expect(s).toContainText(
+      "Además vigas y, en general, todo el material para construcción. Pregúntanos por lo que necesites.",
+    );
     await expect(
       s.getByRole("img", { name: "Holcim", exact: true }),
     ).toBeVisible();
@@ -888,7 +897,9 @@ test.describe("Por qué Los May (#9)", () => {
       "Inventario en tiempo real: te confirmamos disponibilidad al instante.",
     );
     await expect(s).toContainText("Cotización clara desde el principio.");
-    await expect(s).toContainText("[Confirmar]");
+    await expect(s).toContainText(
+      "Pregúntanos por WhatsApp por las condiciones.",
+    );
   });
 
   test("cifra roja Condensed 48px, títulos 22px marino, tarjetas blancas radio 16", async ({
@@ -1072,16 +1083,16 @@ test.describe("Preguntas frecuentes (#10)", () => {
     ],
     [
       "¿Entregan en obra?",
-      "Sí, en Ciudad del Carmen. Fuera de la ciudad: [zonas].",
+      "Sí, en Ciudad del Carmen y municipios aledaños. Pregúntanos por WhatsApp si llegamos a tu zona.",
     ],
-    ["¿Facturan?", "[Confirmar: factura CFDI con tu RFC]"],
+    ["¿Facturan?", "Sí, facturamos tu compra."],
     [
       "¿Qué formas de pago aceptan?",
-      "[Efectivo, transferencia, tarjeta: confirmar]",
+      "Todas: efectivo, transferencia y tarjeta de débito o crédito.",
     ],
     [
       "¿Manejan crédito?",
-      "[Confirmar: crédito para empresas y clientes recurrentes]",
+      "Sí. Escríbenos por WhatsApp y te damos la información de crédito.",
     ],
     [
       "¿Puedo programar entregas por etapa?",
@@ -1165,7 +1176,7 @@ test.describe("Preguntas frecuentes (#10)", () => {
     expect(snap).toContain("¿Entregan en obra?");
   });
 
-  test("JSON-LD FAQPage válido, solo con respuestas confirmadas", async ({
+  test("JSON-LD FAQPage válido, con todas las respuestas confirmadas", async ({
     page,
   }) => {
     await page.goto("/");
@@ -1183,7 +1194,7 @@ test.describe("Preguntas frecuentes (#10)", () => {
         q.acceptedAnswer.text,
       ],
     );
-    expect(preguntas).toEqual([FAQ[0], FAQ[5]]);
+    expect(preguntas).toEqual(FAQ);
     for (const q of faq.mainEntity) {
       expect(q["@type"]).toBe("Question");
       expect(q.acceptedAnswer["@type"]).toBe("Answer");
@@ -1239,7 +1250,7 @@ test.describe("CTA final (#10)", () => {
       expect(
         parseFloat(await css(h2, "line-height")) /
           parseFloat(await css(h2, "font-size")),
-      ).toBeCloseTo(1.05, 2);
+      ).toBeCloseTo(0.92, 2);
       const wa = seccion(page, "cta-titulo").getByRole("link", {
         name: "Cotizar por WhatsApp",
       });
@@ -1251,7 +1262,7 @@ test.describe("CTA final (#10)", () => {
 /* -------------------------------------------------------------------------- */
 
 test.describe("Datos por confirmar", () => {
-  test("todos los textos entre corchetes se ven resaltados en amarillo", async ({
+  test("no queda ningún dato pendiente entre corchetes en la página", async ({
     page,
   }) => {
     await page.goto("/");
@@ -1281,17 +1292,9 @@ test.describe("Datos por confirmar", () => {
       }
       return res;
     });
-    expect(pendientes.map((p) => p.texto).sort()).toEqual(
-      [
-        "[zonas cercanas]",
-        "[confirmar con Los May]",
-        "[Confirmar]",
-        "[zonas]",
-        "[Confirmar: factura CFDI con tu RFC]",
-        "[Efectivo, transferencia, tarjeta: confirmar]",
-        "[Confirmar: crédito para empresas y clientes recurrentes]",
-      ].sort(),
-    );
+    // Los May confirmó todos los datos del diseño (zonas, catálogo, crédito,
+    // factura y formas de pago): ya no debe quedar ningún corchete visible.
+    expect(pendientes.map((p) => p.texto)).toEqual([]);
     for (const p of pendientes) {
       expect(p.fondo, p.texto).toBe(C.pendiente);
       expect(p.color, p.texto).toBe(C.pendienteTexto);
