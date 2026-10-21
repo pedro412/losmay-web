@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-10-21T00:19:14.149Z",
+  "fecha": "2026-10-21T00:37:11.876Z",
   "lighthouse": "lighthouse@13.5.0",
   "configuracion": "móvil por defecto (Moto G Power emulado, 4G lenta simulada, CPU 4×)",
   "servidor": "astro preview (http://localhost:4401), sin GA4",
@@ -15,11 +15,11 @@
           "seo": 1
         },
         "metricas": {
-          "fcpMs": 1503,
+          "fcpMs": 1502,
           "lcpMs": 2404,
           "tbtMs": 0,
           "cls": 0,
-          "speedIndexMs": 1503,
+          "speedIndexMs": 1502,
           "pesoTotalKiB": 211
         },
         "fallidas": {
@@ -29,9 +29,7 @@
             "network-dependency-tree-insight",
             "interactive"
           ],
-          "accessibility": [
-            "label-content-name-mismatch"
-          ],
+          "accessibility": [],
           "best-practices": [],
           "seo": []
         }
@@ -39,14 +37,14 @@
       "corridas": [
         {
           "puntajes": {
-            "performance": 0.98,
+            "performance": 0.97,
             "accessibility": 1,
             "best-practices": 1,
             "seo": 1
           },
           "metricas": {
             "fcpMs": 1503,
-            "lcpMs": 2330,
+            "lcpMs": 2405,
             "tbtMs": 0,
             "cls": 0,
             "speedIndexMs": 1503,
@@ -61,11 +59,11 @@
             "seo": 1
           },
           "metricas": {
-            "fcpMs": 1503,
+            "fcpMs": 1502,
             "lcpMs": 2404,
             "tbtMs": 0,
             "cls": 0,
-            "speedIndexMs": 1503,
+            "speedIndexMs": 1502,
             "pesoTotalKiB": 211
           }
         },
@@ -77,11 +75,11 @@
             "seo": 1
           },
           "metricas": {
-            "fcpMs": 1503,
-            "lcpMs": 2404,
+            "fcpMs": 1502,
+            "lcpMs": 2403,
             "tbtMs": 0,
             "cls": 0,
-            "speedIndexMs": 1503,
+            "speedIndexMs": 1502,
             "pesoTotalKiB": 211
           }
         }
@@ -126,43 +124,43 @@
             "seo": 0.66
           },
           "metricas": {
-            "fcpMs": 1502,
-            "lcpMs": 1652,
-            "tbtMs": 0,
-            "cls": 0,
-            "speedIndexMs": 1502,
-            "pesoTotalKiB": 141
-          }
-        },
-        {
-          "puntajes": {
-            "performance": 0.99,
-            "accessibility": 1,
-            "best-practices": 1,
-            "seo": 0.66
-          },
-          "metricas": {
-            "fcpMs": 1502,
-            "lcpMs": 1652,
-            "tbtMs": 0,
-            "cls": 0,
-            "speedIndexMs": 1502,
-            "pesoTotalKiB": 141
-          }
-        },
-        {
-          "puntajes": {
-            "performance": 0.99,
-            "accessibility": 1,
-            "best-practices": 1,
-            "seo": 0.66
-          },
-          "metricas": {
             "fcpMs": 1503,
             "lcpMs": 1653,
             "tbtMs": 0,
             "cls": 0,
             "speedIndexMs": 1503,
+            "pesoTotalKiB": 141
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.99,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 0.66
+          },
+          "metricas": {
+            "fcpMs": 1502,
+            "lcpMs": 1652,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1502,
+            "pesoTotalKiB": 141
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.99,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 0.66
+          },
+          "metricas": {
+            "fcpMs": 1502,
+            "lcpMs": 1652,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1502,
             "pesoTotalKiB": 141
           }
         }
