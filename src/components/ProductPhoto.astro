@@ -4,6 +4,14 @@
  * En el hero se recorta a 4:5 con `object-position: center 35%`, como en el
  * diseño. Sale en AVIF y WebP (con JPG de respaldo) y varios anchos.
  *
+ * QA de performance (issue #16):
+ * - Calidad 55: la foto de origen ya viene comprimida y, con calidad 72, el
+ *   AVIF pesaba más que el WebP sin verse mejor. Con 55 no hay diferencia
+ *   visible y la variante que baja un teléfono pesa ~40% menos.
+ * - Anchos cada 100px hasta 800: el navegador elige el primero que cubre
+ *   `sizes` × densidad de pantalla; con saltos de 200px bajaba hasta un 30%
+ *   más de píxeles de los que pinta (Lighthouse, «Improve image delivery»).
+ *
  * TODO(cliente): pedir la foto original en alta resolución (la del diseño es
  * de 1536 × 2048 y ya viene comprimida) (issue #15).
  */
@@ -19,6 +27,8 @@ interface Props {
   class?: string;
 }
 
+const WIDTHS = [400, 500, 600, 700, 800, 1000, 1200, 1536];
+
 const {
   // Columna derecha del hero: ~45% del contenedor de 1280 px en escritorio y
   // todo el ancho menos el gutter en móvil.
@@ -33,9 +43,9 @@ const {
   src={productPhoto}
   alt="Bulto de cemento Holcim Apasco ECOPlanet de 25 kg sobre una tarima"
   formats={["avif", "webp"]}
-  widths={[400, 600, 800, 1000, 1200, 1536]}
+  widths={WIDTHS}
   sizes={sizes}
-  quality={72}
+  quality={55}
   loading={loading}
   decoding={loading === "eager" ? "sync" : "async"}
   fetchpriority={fetchpriority}
