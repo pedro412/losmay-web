@@ -14,6 +14,10 @@
  * - Razón social, domicilio fiscal, contacto de privacidad y fecha van entre
  *   corchetes y se ven resaltados en amarillo (`<Texto>`).
  *
+ * TODO(cliente): «Volver al inicio» (`ui.volverAlInicio`) y el nombre del
+ * negocio arriba del título no vienen en el diseño, que no incluye esta
+ * página; se revisan junto con el borrador.
+ *
  * Banner de cookies: no se pone. En México la ley no pide un consentimiento
  * previo para cookies de medición como en la Unión Europea; basta con
  * informarlo en el aviso, que está enlazado desde el footer de todas las
@@ -34,8 +38,12 @@ const {
   secciones,
 } = avisoPrivacidad;
 
+// Los links de las listas son todo el contenido de su `<li>`: no van dentro
+// de una oración, así que no les aplica la excepción de WCAG 2.5.8 y miden
+// 44px de alto (issue #16), aunque quepan en un renglón. Si el texto se parte
+// en dos renglones, la caja crece con él.
 const claseLink =
-  "font-semibold text-marino underline decoration-1 underline-offset-2 hover:decoration-rojo hover:decoration-2";
+  "inline-flex min-h-11 items-center font-semibold text-marino underline decoration-1 underline-offset-2 hover:decoration-rojo hover:decoration-2";
 ---
 
 <BaseLayout title={seoTitulo} description={seoDescripcion} headerSimple>

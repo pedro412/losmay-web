@@ -121,38 +121,47 @@ test.describe("Aviso de privacidad: mismas reglas que la landing", () => {
     });
   }
 
-  test("touch targets de 44px (menos los links dentro de un párrafo)", async ({
-    browser,
-  }) => {
-    const contexto = await browser.newContext({
-      viewport: { width: 320, height: 700 },
-      hasTouch: true,
-      isMobile: true,
+  for (const width of [320, 390]) {
+    test(`touch targets de 44px a ${width}px (menos los links dentro de una oración)`, async ({
+      browser,
+    }) => {
+      const contexto = await browser.newContext({
+        viewport: { width, height: 700 },
+        hasTouch: true,
+        isMobile: true,
+      });
+      const page = await contexto.newPage();
+      await page.goto(RUTA);
+      const chicos = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>("a, button, summary")]
+          .filter((el) => {
+            const r = el.getBoundingClientRect();
+            // Solo están exentos los links dentro de una oración (WCAG 2.5.8):
+            // su párrafo o elemento de lista tiene más texto que el link. Un
+            // link que es todo el contenido de su <li> (las listas de links del
+            // aviso) es un touch target como cualquier botón.
+            const contenedor = el.closest("p, li");
+            const enOracion =
+              !!contenedor &&
+              contenedor.textContent!.trim() !== el.textContent!.trim();
+            return r.width > 0 && r.top >= -1 && !enOracion;
+          })
+          .map((el) => {
+            const r = el.getBoundingClientRect();
+            return {
+              texto: (el.getAttribute("aria-label") ?? el.textContent ?? "")
+                .replace(/\s+/g, " ")
+                .trim(),
+              ancho: Math.round(r.width),
+              alto: Math.round(r.height),
+            };
+          })
+          .filter((t) => t.alto < 44 || t.ancho < 44),
+      );
+      expect(chicos).toEqual([]);
+      await contexto.close();
     });
-    const page = await contexto.newPage();
-    await page.goto(RUTA);
-    const chicos = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>("a, button, summary")]
-        .filter((el) => {
-          const r = el.getBoundingClientRect();
-          // Los links dentro de una oración están exentos (WCAG 2.5.8).
-          return r.width > 0 && r.top >= -1 && !el.closest("p, li");
-        })
-        .map((el) => {
-          const r = el.getBoundingClientRect();
-          return {
-            texto: (el.getAttribute("aria-label") ?? el.textContent ?? "")
-              .replace(/\s+/g, " ")
-              .trim(),
-            ancho: Math.round(r.width),
-            alto: Math.round(r.height),
-          };
-        })
-        .filter((t) => t.alto < 44 || t.ancho < 44),
-    );
-    expect(chicos).toEqual([]);
-    await contexto.close();
-  });
+  }
 });
 
 /* -------------------------------------------------------------------------- */
