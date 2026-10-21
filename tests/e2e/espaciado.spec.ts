@@ -240,7 +240,9 @@ for (const ancho of ANCHOS_MEDIDAS) {
       px(t["padding-left"], 20, "tarjeta: padding-left");
       px(t["column-gap"], 16, "tarjeta: gap");
 
-      const titulo = tarjeta.locator("[id$='-titulo']");
+      // Las tarjetas ya no llevan ids en título y detalle (eran para
+      // aria-describedby): se buscan por su texto.
+      const titulo = tarjeta.getByText("Mínimo de mayoreo", { exact: true });
       px(
         (await estilos(titulo, ["line-height"]))["line-height"],
         24,
@@ -587,7 +589,9 @@ test.describe("Interlineados heredados del diseño (ronda 2, baja)", () => {
   }) => {
     test.fail(true, "La app usa text-sm de Tailwind (20px de interlineado)");
     await abrir(page, 390);
-    const detalle = page.locator("#pedido [id$='-detalle']").first();
+    const detalle = page
+      .locator("#pedido")
+      .getByText("Entrega programada en obra", { exact: true });
     // El diseño no le pone line-height: hereda el 1.5 del cuerpo.
     expect(
       parseFloat((await estilos(detalle, ["line-height"]))["line-height"]),

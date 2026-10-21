@@ -134,12 +134,6 @@ export interface Pedido {
   etiqueta: string;
   titulo: string;
   detalle: string;
-  /**
-   * Nombre accesible del link. Empieza con la `etiqueta` visible ("16 t: …")
-   * para que el control por voz la reconozca (WCAG 2.5.3); título y detalle
-   * se anuncian como descripción (`aria-describedby`).
-   */
-  aria: string;
   /** Link de WhatsApp con el pedido escrito. */
   href: string;
 }
@@ -149,7 +143,6 @@ const porTonelaje = (ton: number, titulo: string, detalle: string): Pedido => ({
   etiqueta: `${ton} t`,
   titulo,
   detalle,
-  aria: `${ton} t: pedir ${ton} toneladas por WhatsApp`,
   href: waLink(mensajes.porTonelaje(ton)),
 });
 
@@ -162,7 +155,6 @@ export const pedidos: readonly Pedido[] = [
     etiqueta: "+32 t",
     titulo: "Más de 32 toneladas",
     detalle: "Obra grande o entregas por etapa",
-    aria: "+32 t: pedir más de 32 toneladas por WhatsApp",
     href: waLink(mensajes.masDe32),
   },
 ];
@@ -371,8 +363,18 @@ export const ui = {
   /** Nombre accesible del logo, que lleva al inicio. */
   irAlInicio: "Los May — inicio",
   saltarAlContenido: "Saltar al contenido",
-  /** Link de regreso a la landing desde otras páginas (aviso de privacidad). */
+  /**
+   * Link de regreso a la landing desde otras páginas (aviso de privacidad).
+   * TODO(cliente): copy fuera del diseño (el diseño no incluye la página del
+   * aviso); revisarlo junto con el borrador del aviso.
+   */
   volverAlInicio: "Volver al inicio",
+  /**
+   * Final del nombre accesible de las tarjetas de Pedido, solo para lectores
+   * de pantalla: «16 t Mínimo de mayoreo Entrega programada en obra — pedir
+   * por WhatsApp».
+   */
+  pedirPorWhatsApp: "pedir por WhatsApp",
 } as const;
 
 /** Links del header y del menú móvil, con el anchor de cada sección. */
@@ -704,7 +706,9 @@ export const avisoPrivacidad = {
             "Datos técnicos como el tipo de dispositivo, el navegador, el sistema operativo, el idioma y la ciudad o región aproximada desde donde te conectas.",
           ],
         },
-        "Usamos esta información solo de forma agregada y estadística: no la usamos para identificarte ni la cruzamos con los datos que nos das por WhatsApp o por teléfono. Google Analytics 4 no registra ni guarda tu dirección IP. Google trata esta información conforme a sus propias políticas y puede guardarla en servidores fuera de México.",
+        // TODO(cliente): el asesor legal debe validar lo que aquí se afirma
+        // de Google (que GA4 no guarda la IP, servidores fuera de México).
+        "Usamos esta información solo de forma agregada y estadística: no la usamos para identificarte ni la cruzamos con los datos que nos das por WhatsApp o por teléfono. Según Google, Google Analytics 4 no registra ni guarda las direcciones IP. Google trata esta información conforme a sus propias políticas y puede guardarla en servidores fuera de México.",
         "Puedes bloquear o borrar las cookies desde la configuración de tu navegador, navegar en modo privado o instalar el complemento de inhabilitación de Google Analytics. El sitio funciona igual sin ellas.",
         {
           lista: [
@@ -732,6 +736,9 @@ export const avisoPrivacidad = {
             "Con autoridades competentes, cuando la ley nos obligue o nos lo requieran conforme a ella.",
           ],
         },
+        // TODO(cliente): el asesor legal debe confirmar que estas remisiones
+        // y comunicaciones no requieren consentimiento conforme a la LFPDPPP
+        // vigente.
         "Ninguno de estos casos requiere tu consentimiento conforme a la ley.",
         "WhatsApp es un servicio de WhatsApp LLC (Meta). Cuando nos escribes por WhatsApp, WhatsApp también trata tus datos conforme a su propia política de privacidad.",
         {

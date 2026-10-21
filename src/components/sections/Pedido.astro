@@ -4,10 +4,12 @@
  *
  * Fondo concreto con cuatro tarjetas-link por tonelaje (`pedidos` en
  * site.ts): cada tarjeta completa es un `<a>` que abre WhatsApp con el pedido
- * escrito. Su `aria-label` empieza con lo que se ve en grande ("16 t: pedir
- * 16 toneladas por WhatsApp"), para que el control por voz lo reconozca
- * (WCAG 2.5.3), y título y detalle se anuncian como descripción con
- * `aria-describedby`. La cuadrícula es
+ * escrito. Su nombre accesible es el texto visible completo más un final
+ * solo para lectores de pantalla («16 t Mínimo de mayoreo Entrega programada
+ * en obra — pedir por WhatsApp»), sin `aria-label`: así el nombre contiene
+ * todo lo que se ve y el control por voz reconoce la tarjeta por cualquier
+ * parte de su texto (WCAG 2.5.3). Con el `aria-label` anterior Lighthouse
+ * marcaba `label-content-name-mismatch`. La cuadrícula es
  * `auto-fit, minmax(260px, 1fr)` como en el diseño (con tope del 100% para que
  * en pantallas de menos de 300px no se salga de la página).
  *
@@ -20,18 +22,10 @@
 import WhatsAppIcon from "../../assets/icons/whatsapp.svg";
 import Button from "../Button.astro";
 import SectionHeading from "../SectionHeading.astro";
-import {
-  minimoMayoreo,
-  pedidos,
-  sucursalesEnLetra,
-  type Pedido,
-} from "../../data/site";
+import { minimoMayoreo, pedidos, sucursalesEnLetra, ui } from "../../data/site";
 import { track, ubicacionPedido } from "../../lib/analytics";
 
 const tituloId = "ped-titulo";
-
-/** Prefijo de los ids de título y detalle de la tarjeta: `ped-pedido_16t`. */
-const idTarjeta = (pedido: Pedido): string => `ped-${ubicacionPedido(pedido)}`;
 ---
 
 <section id="pedido" aria-labelledby={tituloId} class="bg-concreto section-pad">
@@ -57,8 +51,6 @@ const idTarjeta = (pedido: Pedido): string => `ped-${ubicacionPedido(pedido)}`;
             href={pedido.href}
             target="_blank"
             rel="noopener"
-            aria-label={pedido.aria}
-            aria-describedby={`${idTarjeta(pedido)}-titulo ${idTarjeta(pedido)}-detalle`}
             {...track("click_whatsapp", {
               ubicacion: ubicacionPedido(pedido),
             })}
@@ -68,18 +60,11 @@ const idTarjeta = (pedido: Pedido): string => `ped-${ubicacionPedido(pedido)}`;
               {pedido.etiqueta}
             </span>
             <span class="flex min-w-0 flex-auto flex-col gap-0.5">
-              <span
-                id={`${idTarjeta(pedido)}-titulo`}
-                class="text-base font-bold text-grafito"
-              >
+              <span class="text-base font-bold text-grafito">
                 {pedido.titulo}
               </span>
-              <span
-                id={`${idTarjeta(pedido)}-detalle`}
-                class="text-sm text-acero"
-              >
-                {pedido.detalle}
-              </span>
+              <span class="text-sm text-acero">{pedido.detalle}</span>
+              <span class="sr-only">— {ui.pedirPorWhatsApp}</span>
             </span>
             <span
               aria-hidden="true"
