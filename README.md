@@ -211,6 +211,8 @@ El texto es un **borrador** nuestro conforme a la Ley Federal de Protección de 
 - [ ] Razón social y domicilio fiscal del responsable.
 - [ ] Correo o teléfono de contacto para privacidad y solicitudes ARCO.
 - [ ] Confirmar si se mandan promociones por WhatsApp o teléfono (finalidad secundaria; si no, se quita).
+- [ ] Que el asesor legal valide lo que el borrador afirma de terceros: que Google Analytics 4 no guarda las direcciones IP (se atribuye a Google: «Según Google…») y que las remisiones a Google y Vercel y las comunicaciones a autoridades no requieren consentimiento. Van con `// TODO(cliente)` en `avisoPrivacidad`.
+- [ ] Revisar el copy de la página que no viene en el diseño (el diseño no incluye el aviso): el link «Volver al inicio» (`ui.volverAlInicio`) y el nombre del negocio arriba del título.
 - [ ] Al aprobarlo: llenar los corchetes y la fecha, poner `borrador: null` en `avisoPrivacidad` y quitar `/aviso-de-privacidad` de `seo.rutasSinIndexar` (vuelve a indexarse y a salir en el sitemap).
 
 ## Deploy (Vercel)
@@ -276,9 +278,9 @@ Resultado en local (20 de octubre de 2026, mediana de 3 corridas):
 | `/aviso-de-privacidad` | 99          | 100           | 100            | 66  | 1.5 s | 1.7 s | 0   | 0 ms | 141 KiB |
 
 - El SEO del aviso sale en 66 a propósito: lleva `noindex` mientras es borrador (issue #13) y la única auditoría que falla es `is-crawlable`. Al aprobarlo y quitar el `noindex` sube a 100.
-- `label-content-name-mismatch` (experimental, no cuenta para el puntaje) marca las tarjetas de Pedido: su nombre accesible es «16 t: pedir 16 toneladas por WhatsApp» y el resto del texto va en `aria-describedby`. El nombre empieza con lo que se ve («16 t»), que es lo que pide WCAG 2.5.3; se deja así.
+- Ya no falla ninguna auditoría de accesibilidad, tampoco las que no cuentan para el puntaje. `label-content-name-mismatch` marcaba las tarjetas de Pedido porque su `aria-label` («16 t: pedir 16 toneladas por WhatsApp») no traía el texto visible; ahora no llevan `aria-label` y su nombre es todo el texto que se ve más un final solo para lectores de pantalla («16 t Mínimo de mayoreo Entrega programada en obra — pedir por WhatsApp»), así que el control por voz las reconoce por cualquier parte del texto (WCAG 2.5.3).
 - En localhost no se carga GA4, así que estos números no incluyen `gtag.js` (se pide después de `load`, ver [Analytics](#analytics-ga4)). La medición que cuenta es en el preview de Vercel o en producción (pendiente abajo).
-- El LCP (la foto del hero) queda a ~0.1 s del límite en la simulación. Casi todo el peso son las 7 variantes de Barlow (~155 KiB); si en producción se pasa de 2.5 s, las palancas son quitar algún peso de fuente que se use poco (decisión de diseño) o dejar un solo logo SVG reutilizado con `<use>` (hoy van 3 copias de ~18 KB en el HTML).
+- El LCP (la foto del hero) queda a ~0.1 s del límite en la simulación (2404 ms de mediana, sin `gtag.js`): por eso la medición en el preview y en producción es obligatoria antes de dar el #16 por cerrado. Casi todo el peso son las 7 variantes de Barlow (~155 KiB); si en producción se pasa de 2.5 s, las palancas son quitar algún peso de fuente que se use poco (decisión de diseño) o dejar un solo logo SVG reutilizado con `<use>` (hoy van 3 copias de ~18 KB en el HTML).
 
 Cambios de esta revisión: la foto del hero bajó a calidad 55 con anchos cada 100 px hasta 800 (la variante del teléfono pasó de 90 KB a 42 KB), el CSS va dentro del HTML (`build.inlineStylesheets`), Tailwind solo busca clases en `src/` (antes leía las pruebas y el diseño de referencia y el CSS traía clases sin uso) y `gtag.js` espera a `load`.
 
@@ -306,11 +308,20 @@ Cambios de esta revisión: la foto del hero bajó a calidad 55 con anchos cada 1
 
 `https://wa.me/<número>?text=` es el formato que abre la app de WhatsApp en iOS y Android si está instalada y, si no, la página de WhatsApp que ofrece instalarla o seguir en web.whatsapp.com; `whatsapp://` falla sin la app y `api.whatsapp.com` agrega un salto.
 
+### Para aprobación de diseño
+
+Ajustes contra `docs/design/Main.dc.html` que se hicieron por accesibilidad o legibilidad y conviene que diseño vea:
+
+- [ ] CTA final: el titular lleva el interlineado 0.92 del diseño, pero el «¿» sube 0.12em; si no, su gancho toca la letra del renglón de abajo y se lee «ÑECESITAS».
+- [ ] Footer en móvil (<760 px): los teléfonos del bloque Contacto miden 44 px de alto (área táctil del #16), así que los renglones quedan más separados que los 8 px del diseño. En escritorio quedan como en el diseño.
+- [ ] Footer en móvil: «Aviso de privacidad» va en su propio renglón, sin «·», debajo del «© …». Antes el renglón terminaba en «·» y el link bajaba solo.
+- [ ] Aviso de privacidad: los links de las listas (Google y WhatsApp) miden 44 px de alto aunque quepan en un renglón, porque no van dentro de una oración.
+
 ### Pendiente (manual)
 
 En el preview de Vercel del PR de la fase 3:
 
-- [ ] Lighthouse móvil (PageSpeed Insights o DevTools → Lighthouse → Mobile) ≥ 95 en las 4 categorías, LCP < 2.5 s y CLS < 0.1.
+- [ ] Lighthouse móvil (PageSpeed Insights o DevTools → Lighthouse → Mobile) ≥ 95 en las 4 categorías, LCP < 2.5 s y CLS < 0.1. En local el LCP quedó en 2.4 s, a 0.1 s del límite: si en el preview se pasa, ver las palancas de arriba.
 
 En teléfonos reales de gama media, con datos móviles:
 
