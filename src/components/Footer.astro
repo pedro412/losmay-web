@@ -10,8 +10,15 @@
  * recupera 10px abajo, para que el texto quede a la distancia del diseño del
  * encabezado y de la línea legal.
  *
+ * Es una desviación aceptada del diseño (que separa los renglones con 8px):
+ * en móvil el ritmo del bloque es más abierto. Está en el README, en la lista
+ * de cosas que diseño debe aprobar.
+ *
  * En la línea legal el link mide 44px y compensa ese alto con márgenes
- * negativos para no mover el layout.
+ * negativos para no mover el layout. En móvil (<760px) el link va en su
+ * propio renglón y sin «·»: antes el renglón terminaba en «·» y el link
+ * bajaba solo. En escritorio el «·» y el link van juntos, sin corte. En la
+ * página del aviso el link lleva `aria-current="page"`.
  *
  * Analytics (issue #12): los links `tel:` llevan `click_llamar` con
  * `sucursal` y `ubicacion="footer"`.
@@ -28,6 +35,10 @@ const anio = new Date().getFullYear();
 const hayAvisoPrivacidad =
   Object.keys(import.meta.glob("../pages/aviso-de-privacidad.{astro,md,mdx}"))
     .length > 0;
+
+// `trailingSlash: "never"`, pero por si acaso se compara sin diagonal final.
+const enAviso =
+  Astro.url.pathname.replace(/\/+$/, "") === legal.avisoPrivacidad.href;
 ---
 
 <footer class="foco-sobre-marino bg-marino-900 pt-12 pb-7 text-[15px] text-marino-200 page-gutter">
@@ -78,17 +89,18 @@ const hayAvisoPrivacidad =
     <p class="m-0">
       {`© ${anio} ${negocio.nombre}`}
       {hayAvisoPrivacidad && (
-        <>
-          <span aria-hidden="true" class="mx-1.5">
+        <span class="block md:inline md:whitespace-nowrap">
+          <span aria-hidden="true" class="mx-1.5 hidden md:inline">
             ·
           </span>
           <a
             href={legal.avisoPrivacidad.href}
+            aria-current={enAviso ? "page" : undefined}
             class="-my-3 inline-flex min-h-11 items-center text-marino-300 underline underline-offset-2 hover:text-white"
           >
             {legal.avisoPrivacidad.label}
           </a>
-        </>
+        </span>
       )}
     </p>
     <p class="m-0">{legal.marcas}</p>
