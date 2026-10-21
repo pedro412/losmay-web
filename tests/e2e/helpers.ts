@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { BrowserContext, Page } from "@playwright/test";
 import { existsSync } from "node:fs";
 
 /**
@@ -79,4 +79,45 @@ export async function scrollInstantaneo(page: Page, y: number) {
     (destino) => window.scrollTo({ top: destino, behavior: "instant" }),
     y,
   );
+}
+
+/*
+ * Producción simulada (issues #12 y #16): el build local servido como si
+ * fuera https://losmay.com, con las requests a Google contestadas vacías y
+ * todo lo demás externo abortado. No sale nada a la red.
+ */
+
+export const LOCAL = "http://localhost:4400";
+export const PRODUCCION = "https://losmay.com";
+export const GOOGLE =
+  /^https?:\/\/([a-z0-9-]+\.)*(googletagmanager|google-analytics)\.com\//;
+
+export type Red = { google: string[]; externas: string[] };
+
+/** Sirve el build local en https://losmay.com y corta todo lo externo. */
+export async function servirComoProduccion(
+  context: BrowserContext,
+): Promise<Red> {
+  const red: Red = { google: [], externas: [] };
+  await context.route("**/*", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.origin === PRODUCCION) {
+      const respuesta = await route.fetch({
+        url: `${LOCAL}${url.pathname}${url.search}`,
+      });
+      return route.fulfill({ response: respuesta });
+    }
+    if (url.origin === LOCAL) return route.continue();
+    if (GOOGLE.test(url.href)) {
+      red.google.push(url.href);
+      return route.fulfill({
+        status: 200,
+        contentType: "text/javascript",
+        body: "",
+      });
+    }
+    red.externas.push(url.href);
+    return route.abort();
+  });
+  return red;
 }

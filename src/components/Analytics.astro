@@ -8,9 +8,13 @@
  * preview`) o en `*.vercel.app` no carga `gtag.js` ni manda eventos.
  *
  * En losmay.com:
- * 1. Carga `gtag.js` con `async` (sin Partytown: es un solo script).
- * 2. Manda la vista de página con `config`. Con `?debug_mode=1` en la URL
- *    los hits salen en DebugView de GA4.
+ * 1. Deja en `dataLayer` la vista de página (`config`) desde el principio.
+ *    Con `?debug_mode=1` en la URL los hits salen en DebugView de GA4.
+ * 2. Carga `gtag.js` con `async` (sin Partytown: es un solo script) hasta
+ *    después del evento `load` (QA de performance, issue #16): así sus
+ *    ~150 KB no compiten en 4G con la foto del hero (LCP) ni con las
+ *    fuentes. Lo que se haya mandado antes se queda en `dataLayer` y
+ *    `gtag.js` lo procesa al cargar, sin perder la vista ni los clics.
  * 3. Un listener en `document` manda `click_whatsapp`, `click_llamar` y
  *    `click_como_llegar` al tocar un link con `data-track`, con los
  *    parámetros de `parametrosGa` leídos de sus `data-*` (los pone `track()`).
@@ -45,11 +49,15 @@ const id = idGa({
       /[?&]debug_mode=1(&|$)/.test(location.search) ? { debug_mode: true } : {},
     );
 
-    var gtagJs = document.createElement("script");
-    gtagJs.async = true;
-    gtagJs.src =
-      "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
-    document.head.appendChild(gtagJs);
+    var cargarGtag = function () {
+      var gtagJs = document.createElement("script");
+      gtagJs.async = true;
+      gtagJs.src =
+        "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
+      document.head.appendChild(gtagJs);
+    };
+    if (document.readyState === "complete") cargarGtag();
+    else window.addEventListener("load", cargarGtag, { once: true });
 
     document.addEventListener(
       "click",

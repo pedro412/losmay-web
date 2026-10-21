@@ -1,5 +1,13 @@
-import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { ESCRITORIO, GA_ID_PRUEBA, MOVIL } from "./helpers";
+import { expect, test, type Page } from "@playwright/test";
+import {
+  ESCRITORIO,
+  GA_ID_PRUEBA,
+  GOOGLE,
+  MOVIL,
+  PRODUCCION,
+  servirComoProduccion,
+  type Red,
+} from "./helpers";
 
 /**
  * Pruebas del issue #12: GA4 con eventos de clic.
@@ -14,39 +22,6 @@ import { ESCRITORIO, GA_ID_PRUEBA, MOVIL } from "./helpers";
  * Con `gtag.js` vacío, `window.dataLayer` guarda tal cual lo que manda la
  * página (`gtag("event", nombre, parámetros)`), y eso es lo que se revisa.
  */
-
-const LOCAL = "http://localhost:4400";
-const PRODUCCION = "https://losmay.com";
-const GOOGLE =
-  /^https?:\/\/([a-z0-9-]+\.)*(googletagmanager|google-analytics)\.com\//;
-
-type Red = { google: string[]; externas: string[] };
-
-/** Sirve el build local en https://losmay.com y corta todo lo externo. */
-async function servirComoProduccion(context: BrowserContext): Promise<Red> {
-  const red: Red = { google: [], externas: [] };
-  await context.route("**/*", async (route) => {
-    const url = new URL(route.request().url());
-    if (url.origin === PRODUCCION) {
-      const respuesta = await route.fetch({
-        url: `${LOCAL}${url.pathname}${url.search}`,
-      });
-      return route.fulfill({ response: respuesta });
-    }
-    if (url.origin === LOCAL) return route.continue();
-    if (GOOGLE.test(url.href)) {
-      red.google.push(url.href);
-      return route.fulfill({
-        status: 200,
-        contentType: "text/javascript",
-        body: "",
-      });
-    }
-    red.externas.push(url.href);
-    return route.abort();
-  });
-  return red;
-}
 
 /**
  * Los clics no navegan (ni abren WhatsApp, Maps o el marcador): solo importa
@@ -117,6 +92,38 @@ test.describe("GA4 en producción (losmay.com)", () => {
     expect(capa?.[0]?.[0]).toBe("js");
     expect(capa?.[1]).toEqual(["config", GA_ID_PRUEBA, {}]);
     expect(await eventos(page)).toEqual([]);
+  });
+
+  test("gtag.js espera al evento load: no compite con la foto del hero (#16)", async ({
+    page,
+  }) => {
+    // Se detiene la foto del hero (LCP) para que `load` tarde en llegar.
+    let soltarFoto!: () => void;
+    const foto = new Promise<void>((r) => (soltarFoto = r));
+    await page.route(
+      /\/_astro\/cemento-holcim.*\.(avif|webp|jpg)$/,
+      async (route) => {
+        await foto;
+        await route.fallback();
+      },
+    );
+
+    await page.goto(`${PRODUCCION}/`, { waitUntil: "domcontentloaded" });
+    // La vista de página ya está en dataLayer, pero gtag.js no se pidió.
+    expect((await dataLayer(page))?.[1]).toEqual(["config", GA_ID_PRUEBA, {}]);
+    await page.waitForTimeout(500);
+    expect(red.google).toEqual([]);
+    await expect(
+      page.locator('script[src*="googletagmanager.com"]'),
+    ).toHaveCount(0);
+
+    soltarFoto();
+    await expect
+      .poll(() => red.google)
+      .toContainEqual(
+        `https://www.googletagmanager.com/gtag/js?id=${GA_ID_PRUEBA}`,
+      );
+    expect(await page.evaluate(() => document.readyState)).toBe("complete");
   });
 
   test("con ?debug_mode=1 los hits van a DebugView", async ({ page }) => {
