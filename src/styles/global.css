@@ -1,4 +1,10 @@
-@import "tailwindcss";
+/*
+ * Tailwind solo busca clases en src/ (QA de performance, issue #16). Sin
+ * `source()` también leía tests/, scripts/ y docs/, y los textos de las
+ * pruebas o del diseño de referencia metían al CSS de producción clases que
+ * la página no usa.
+ */
+@import "tailwindcss" source("../");
 
 /*
  * Sistema visual de Los May (docs/design/Marca.dc.html y Main.dc.html).
