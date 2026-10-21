@@ -42,15 +42,38 @@ const fuente = async (
     "font/woff2",
   )}) format("woff2")}`;
 
+// Colores: los tokens `--color-*` del `@theme` de src/styles/global.css, para
+// que la imagen no se desfase si cambia la paleta del sitio.
+const globalCss = (await archivo("src/styles/global.css")).toString();
+const token = (/** @type {string} */ nombre) => {
+  const valor = globalCss.match(
+    new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{3,8})\\s*;`),
+  )?.[1];
+  if (!valor)
+    throw new Error(`Falta el token --color-${nombre} en global.css.`);
+  return valor;
+};
+const c = {
+  blanco: token("white"),
+  rojo: token("rojo"),
+  rojoLogo: token("rojo-400"),
+  linea: token("marino-line"),
+  marino200: token("marino-200"),
+  acero: token("acero"),
+};
+// Palomitas del post (docs/design/Post.dc.html): un rojo claro que solo usa
+// la pieza de campaña sobre marino y no es token del sitio.
+const rojoPalomita = "#FF8A8E";
+
 // Logo de Los May en versión blanca (sobre marino), desde el componente del
 // sitio, para no duplicar los paths.
 const logoAstro = (await archivo("src/components/Logo.astro")).toString();
 const logo = logoAstro
   .slice(logoAstro.indexOf("<svg"), logoAstro.indexOf("</svg>") + 6)
   .replace(/<svg[^>]*>/, '<svg viewBox="0 0 1100 480" class="logo">')
-  .replace("class={stroke}", 'stroke="#E0353C"')
-  .replace("class={fill}", 'fill="#E0353C"')
-  .replace("class={text}", 'fill="#FFFFFF"')
+  .replace("class={stroke}", `stroke="${c.rojoLogo}"`)
+  .replace("class={fill}", `fill="${c.rojoLogo}"`)
+  .replace("class={text}", `fill="${c.blanco}"`)
   .replace(/<!--.*?-->/g, "");
 
 const [foto, holcim, ...fuentes] = await Promise.all([
@@ -73,31 +96,31 @@ const html = `<!doctype html>
 ${fuentes.join("\n")}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{width:${seo.imagen.ancho}px;height:${seo.imagen.alto}px;overflow:hidden;background:${colorMarca};color:#FFF;font-family:Barlow,sans-serif}
+body{width:${seo.imagen.ancho}px;height:${seo.imagen.alto}px;overflow:hidden;background:${colorMarca};color:${c.blanco};font-family:Barlow,sans-serif}
 .lienzo{display:flex;gap:44px;height:100%;padding:52px 52px 52px 60px}
 .texto{flex:1 1 0;display:flex;flex-direction:column;min-width:0}
 .arriba{display:flex;align-items:center;justify-content:space-between}
 .logo{display:block;width:214px;height:auto}
-.mayoreo{border:2px solid #FFF;border-radius:6px;padding:7px 14px;font-size:17px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.mayoreo{border:2px solid ${c.blanco};border-radius:6px;padding:7px 14px;font-size:17px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
 h1{margin:26px 0 0;font-family:"Barlow Condensed",sans-serif;font-weight:800;text-transform:uppercase;font-size:104px;line-height:.86;letter-spacing:-.01em}
-h1 span{display:inline-block;background:#C8202A;padding:3px 16px 0;margin-top:8px}
+h1 span{display:inline-block;background:${c.rojo};padding:3px 16px 0;margin-top:8px}
 ul{list-style:none;margin:26px 0 0;padding:0;display:flex;gap:20px;font-size:20px;font-weight:600;white-space:nowrap}
 li{display:flex;align-items:center;gap:8px}
-li svg{width:22px;height:22px;flex:none;fill:none;stroke:#FF8A8E;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+li svg{width:22px;height:22px;flex:none;fill:none;stroke:${rojoPalomita};stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .abajo{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
-.sello{display:inline-flex;align-items:center;gap:16px;border:2px solid #2B4D72;border-radius:14px;padding:13px 18px}
+.sello{display:inline-flex;align-items:center;gap:16px;border:2px solid ${c.linea};border-radius:14px;padding:13px 18px}
 .sello img{display:block;height:34px;width:auto}
-.sello i{width:2px;align-self:stretch;background:#2B4D72}
+.sello i{width:2px;align-self:stretch;background:${c.linea}}
 .sello span{font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.15}
 .dominio{text-align:right}
-.dominio small{display:block;font-size:16px;font-weight:600;color:#C9D6E4;letter-spacing:.04em;text-transform:uppercase}
+.dominio small{display:block;font-size:16px;font-weight:600;color:${c.marino200};letter-spacing:.04em;text-transform:uppercase}
 .dominio b{display:block;margin-top:4px;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:54px;line-height:1}
 .foto{flex:0 0 372px;position:relative;border-radius:14px;overflow:hidden}
 .foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 30%}
-.ficha{position:absolute;left:14px;right:14px;bottom:14px;background:#FFF;color:${colorMarca};border-radius:10px;padding:14px 18px}
-.ficha small{display:block;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#545D68}
+.ficha{position:absolute;left:14px;right:14px;bottom:14px;background:${c.blanco};color:${colorMarca};border-radius:10px;padding:14px 18px}
+.ficha small{display:block;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${c.acero}}
 .ficha b{display:block;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:38px;line-height:1;text-transform:uppercase}
-.ficha span{display:block;font-size:15px;font-weight:600;color:#545D68}
+.ficha span{display:block;font-size:15px;font-weight:600;color:${c.acero}}
 </style></head><body>
 <div class="lienzo">
   <div class="texto">
