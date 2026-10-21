@@ -30,6 +30,10 @@ const variants = (pkg, file, weights) =>
 export default defineConfig({
   // Sitio 100% estático, sin adapter (se sirve desde Vercel como archivos).
   output: "static",
+  // URLs sin diagonal final, igual que la canónica, los links internos y
+  // `trailingSlash: false` de vercel.json (que redirige `/ruta/` → `/ruta`).
+  // Así el sitemap tampoco lista URLs con diagonal que terminarían en un 308.
+  trailingSlash: "never",
   // Dominio de producción: base de la canónica, de las URLs de Open Graph y
   // JSON-LD, del sitemap y del robots.txt.
   site: negocio.url,
