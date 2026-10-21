@@ -26,17 +26,18 @@ npm install
 npm run dev        # http://localhost:4321
 ```
 
-| Script                 | Qué hace                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------------------ |
-| `npm run dev`          | Servidor de desarrollo                                                                           |
-| `npm run build`        | Genera el sitio estático en `dist/`                                                              |
-| `npm run preview`      | Sirve `dist/` localmente                                                                         |
-| `npm run check`        | `astro check` (tipos y diagnósticos)                                                             |
-| `npm run format`       | Formatea con Prettier                                                                            |
-| `npm run format:check` | Verifica el formato sin escribir                                                                 |
-| `npm run favicons`     | Regenera los favicons en `public/`                                                               |
-| `npm run og`           | Regenera la imagen para compartir `public/og.jpg` (1200 × 630) con el Chromium de Playwright     |
-| `npm run test:e2e`     | Compila y corre las pruebas de Playwright (`tests/e2e`) contra `astro preview` en el puerto 4400 |
+| Script                  | Qué hace                                                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npm run dev`           | Servidor de desarrollo                                                                                   |
+| `npm run build`         | Genera el sitio estático en `dist/`                                                                      |
+| `npm run preview`       | Sirve `dist/` localmente                                                                                 |
+| `npm run check`         | `astro check` (tipos y diagnósticos)                                                                     |
+| `npm run format`        | Formatea con Prettier                                                                                    |
+| `npm run format:check`  | Verifica el formato sin escribir                                                                         |
+| `npm run favicons`      | Regenera los favicons en `public/`                                                                       |
+| `npm run og`            | Regenera la imagen para compartir `public/og.jpg` (1200 × 630) con el Chromium de Playwright             |
+| `npm run test:e2e`      | Compila y corre las pruebas de Playwright (`tests/e2e`) contra `astro preview` en el puerto 4400         |
+| `npm run qa:lighthouse` | Compila y corre Lighthouse móvil contra `astro preview` (puerto 4401); reportes en `docs/qa/lighthouse/` |
 
 `test:e2e` siempre levanta su propio servidor (no reusa uno que ya esté corriendo, para no probar un `dist/` viejo); si el puerto 4400 está ocupado, falla con un aviso. Detén el servidor anterior con `npx astro preview stop`.
 
@@ -54,6 +55,8 @@ src/
   pages/               rutas
   styles/global.css    Tailwind y tokens
 docs/design/           diseño de referencia
+docs/qa/lighthouse/    reportes de Lighthouse (npm run qa:lighthouse)
+scripts/               favicons, imagen para compartir y Lighthouse
 ```
 
 ## Sistema visual
@@ -132,6 +135,8 @@ Google Analytics 4 con `gtag.js`, sin Partytown, y eventos de clic en los botone
 | Build de producción (`import.meta.env.PROD`)              | build           | `npm run dev` no lleva nada                |
 | En Vercel, entorno `production` (`VERCEL_ENV`)            | build           | los previews no llevan nada                |
 | El dominio es `losmay.com` o `www.losmay.com` (`hostsGa`) | navegador       | en localhost y `*.vercel.app` no hace nada |
+
+La vista de página se deja en `dataLayer` desde el principio, pero `gtag.js` (~150 KB) se pide hasta después del evento `load`, para que no compita en datos móviles con la foto del hero ni con las fuentes (issue #16). `gtag.js` procesa al cargar lo que ya esté en `dataLayer`, así que no se pierden la vista ni los clics; solo no se cuenta a quien cierre la página antes de que termine de cargar.
 
 La variable va solo en el entorno **Production** de Vercel, así que los previews ya no la tienen; las otras dos revisiones son por si alguien la agrega donde no va. Un ID con formato inválido detiene el build. Las variables `PUBLIC_*` se escriben en el HTML al compilar: después de agregar o cambiar el ID hay que volver a publicar.
 
@@ -221,11 +226,11 @@ Dominios, DNS y variables de entorno no se configuran desde el repo ni con la CL
 
 ### `vercel.json`
 
-| Regla                  | Rutas       | Qué hace                                                                                                                                                                                                                                                                                     |
-| ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Caché `immutable`      | `/_astro/*` | `Cache-Control: public, max-age=31536000, immutable`. Ahí solo hay archivos con hash en el nombre (fuentes e imágenes procesadas; el CSS va dentro del HTML): si cambian, cambia el nombre. El resto (HTML, `og.jpg`, favicons, sitemap) se queda con la caché por defecto de Vercel, que revalida.             |
-| Headers de seguridad   | todas       | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'` (nadie puede meter la página en un iframe), `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` sin cámara, micrófono, ubicación, pagos, USB ni Topics. |
-| `trailingSlash: false` | todas       | `/aviso-de-privacidad/` redirige (308) a `/aviso-de-privacidad`, la misma URL de la canónica y los links. `trailingSlash: "never"` en `astro.config.mjs` hace que el sitemap también las liste sin diagonal.                                                                                 |
+| Regla                  | Rutas       | Qué hace                                                                                                                                                                                                                                                                                            |
+| ---------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Caché `immutable`      | `/_astro/*` | `Cache-Control: public, max-age=31536000, immutable`. Ahí solo hay archivos con hash en el nombre (fuentes e imágenes procesadas; el CSS va dentro del HTML): si cambian, cambia el nombre. El resto (HTML, `og.jpg`, favicons, sitemap) se queda con la caché por defecto de Vercel, que revalida. |
+| Headers de seguridad   | todas       | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'` (nadie puede meter la página en un iframe), `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` sin cámara, micrófono, ubicación, pagos, USB ni Topics.        |
+| `trailingSlash: false` | todas       | `/aviso-de-privacidad/` redirige (308) a `/aviso-de-privacidad`, la misma URL de la canónica y los links. `trailingSlash: "never"` en `astro.config.mjs` hace que el sitemap también las liste sin diagonal.                                                                                        |
 
 HTTPS y HSTS los pone Vercel (certificado automático para cada dominio). `astro preview` no aplica `vercel.json`: las pruebas (`tests/e2e/vercel.spec.ts`) revisan la configuración contra el `dist/` compilado, y los headers reales se revisan con `curl` después del deploy.
 
@@ -254,6 +259,76 @@ Para revisar (criterio de aceptación del #14):
 - [ ] El PR de la fase 3 tiene su preview de Vercel y en ese preview no se carga GA4.
 
 Opcional, sin activar: **Vercel Web Analytics** y **Speed Insights** para ver los Core Web Vitals de visitas reales. Se activan en el panel del proyecto y piden agregar su script; si se activan, hay que sumarlos a las remisiones del [aviso de privacidad](#aviso-de-privacidad).
+
+## QA prelanzamiento
+
+Issue [#16](https://github.com/pedro412/losmay-web/issues/16). Lo automático corre aquí; lo que pide un teléfono real, un lector de pantalla o producción queda como checklist pendiente.
+
+### Lighthouse
+
+`npm run qa:lighthouse` compila, levanta `astro preview` en el puerto 4401 y corre [Lighthouse](https://github.com/GoogleChrome/lighthouse) 13.5 con su configuración móvil por defecto (Moto G Power emulado, 4G lenta simulada, CPU 4× más lenta) con el Chromium de Playwright. Corre cada página 3 veces, guarda la corrida mediana en `docs/qa/lighthouse/<página>.report.html` (ábrelo en el navegador) y un `resumen.json` con todas las corridas, y falla si la landing baja de 95 en alguna categoría o no cumple LCP < 2.5 s y CLS < 0.1.
+
+Resultado en local (20 de octubre de 2026, mediana de 3 corridas):
+
+| Página                 | Performance | Accesibilidad | Best Practices | SEO | FCP   | LCP   | CLS | TBT  | Peso    |
+| ---------------------- | ----------- | ------------- | -------------- | --- | ----- | ----- | --- | ---- | ------- |
+| `/`                    | 97          | 100           | 100            | 100 | 1.5 s | 2.4 s | 0   | 0 ms | 211 KiB |
+| `/aviso-de-privacidad` | 99          | 100           | 100            | 66  | 1.5 s | 1.7 s | 0   | 0 ms | 141 KiB |
+
+- El SEO del aviso sale en 66 a propósito: lleva `noindex` mientras es borrador (issue #13) y la única auditoría que falla es `is-crawlable`. Al aprobarlo y quitar el `noindex` sube a 100.
+- `label-content-name-mismatch` (experimental, no cuenta para el puntaje) marca las tarjetas de Pedido: su nombre accesible es «16 t: pedir 16 toneladas por WhatsApp» y el resto del texto va en `aria-describedby`. El nombre empieza con lo que se ve («16 t»), que es lo que pide WCAG 2.5.3; se deja así.
+- En localhost no se carga GA4, así que estos números no incluyen `gtag.js` (se pide después de `load`, ver [Analytics](#analytics-ga4)). La medición que cuenta es en el preview de Vercel o en producción (pendiente abajo).
+- El LCP (la foto del hero) queda a ~0.1 s del límite en la simulación. Casi todo el peso son las 7 variantes de Barlow (~155 KiB); si en producción se pasa de 2.5 s, las palancas son quitar algún peso de fuente que se use poco (decisión de diseño) o dejar un solo logo SVG reutilizado con `<use>` (hoy van 3 copias de ~18 KB en el HTML).
+
+Cambios de esta revisión: la foto del hero bajó a calidad 55 con anchos cada 100 px hasta 800 (la variante del teléfono pasó de 90 KB a 42 KB), el CSS va dentro del HTML (`build.inlineStylesheets`), Tailwind solo busca clases en `src/` (antes leía las pruebas y el diseño de referencia y el CSS traía clases sin uso) y `gtag.js` espera a `load`.
+
+### Pruebas automáticas
+
+`tests/e2e/qa.spec.ts`, más las pruebas de cada issue:
+
+| Punto del #16                                  | Dónde se prueba                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| WCAG 2.1 AA con axe-core (FAQ y menú abiertos) | `qa.spec.ts`: landing y aviso, a 390 y 1440 px                                                       |
+| Contraste AA                                   | axe-core en `qa.spec.ts`; `secciones.spec.ts` y `ronda3.spec.ts` (secciones, header, footer, hover)  |
+| Foco visible                                   | `teclado.spec.ts` (landing), `qa.spec.ts` (aviso), `interaccion.spec.ts` (color del anillo)          |
+| Touch targets de 44 px                         | `teclado.spec.ts`, `interaccion.spec.ts` (320 y 360 px), `qa.spec.ts` (aviso)                        |
+| Navegación con teclado                         | `teclado.spec.ts`, `header.spec.ts` (menú), `secciones.spec.ts` (carrusel y FAQ)                     |
+| Un solo `h1` y jerarquía de titulares          | `base.spec.ts`, `secciones.spec.ts`, axe-core                                                        |
+| `prefers-reduced-motion`                       | `qa.spec.ts` (sin animaciones ni transiciones de movimiento) y `ronda3.spec.ts` (scroll instantáneo) |
+| Imágenes AVIF/WebP con tamaños correctos       | `qa.spec.ts`: `<picture>` con AVIF y WebP, y `sizes` contra el ancho pintado de 320 a 1920 px        |
+| JS mínimo (solo menú y GA)                     | `qa.spec.ts`: 2 scripts inline (< 4 KB) y `gtag.js` como único JS externo                            |
+| CLS < 0.1                                      | `qa.spec.ts`: con las fuentes llegando 1.5 s tarde; Lighthouse                                       |
+| Links de WhatsApp (`https://wa.me/52…?text=`)  | `links.spec.ts`, `qa.spec.ts` (landing y aviso)                                                      |
+| `tel:` y «Cómo llegar» en las 2 sucursales     | `secciones.spec.ts`, `links.spec.ts`, `analytics.spec.ts`                                            |
+| Anchors con el offset del header sticky        | `header.spec.ts`, `interaccion.spec.ts`, `secciones.spec.ts`                                         |
+| Sin scroll horizontal de 320 a 1920 px         | `base.spec.ts`, `ronda3.spec.ts` (viewport real de móvil), `aviso-privacidad.spec.ts`                |
+| Eventos de GA4                                 | `analytics.spec.ts` (con ID falso y requests a Google interceptadas)                                 |
+
+`https://wa.me/<número>?text=` es el formato que abre la app de WhatsApp en iOS y Android si está instalada y, si no, la página de WhatsApp que ofrece instalarla o seguir en web.whatsapp.com; `whatsapp://` falla sin la app y `api.whatsapp.com` agrega un salto.
+
+### Pendiente (manual)
+
+En el preview de Vercel del PR de la fase 3:
+
+- [ ] Lighthouse móvil (PageSpeed Insights o DevTools → Lighthouse → Mobile) ≥ 95 en las 4 categorías, LCP < 2.5 s y CLS < 0.1.
+
+En teléfonos reales de gama media, con datos móviles:
+
+- [ ] Android con Chrome y iPhone con Safari: la página carga rápido, sin scroll horizontal ni textos cortados, y el menú abre y cierra.
+- [ ] Cada botón de WhatsApp (header, menú, hero, tarjetas de 16/24/32/+32 t y CTA final) con la app instalada abre el chat de Los May con el mensaje correcto, en iOS y en Android.
+- [ ] Los mismos botones en un teléfono sin WhatsApp: llevan a la página de WhatsApp / web.whatsapp.com.
+- [ ] `tel:` de las 2 sucursales (tarjetas y footer) abre el marcador con el número correcto.
+- [ ] «Cómo llegar» de las 2 sucursales abre Google Maps (o Apple Maps) en la sucursal correcta.
+- [ ] VoiceOver (iOS) y TalkBack (Android): se recorre toda la página, el menú se anuncia abierto/cerrado, las tarjetas de Pedido se leen completas y las preguntas abren y cierran.
+
+En producción, ya con `PUBLIC_GA_ID` (ver [Analytics](#analytics-ga4)):
+
+- [ ] Eventos de GA4 verificados en DebugView (`https://losmay.com/?debug_mode=1`): `click_whatsapp`, `click_llamar` y `click_como_llegar` con su `ubicacion` / `sucursal`.
+- [ ] Lighthouse móvil en `https://losmay.com` (ya con `gtag.js`) sigue ≥ 95.
+
+Criterio de aceptación:
+
+- [ ] Visto bueno de Los May.
 
 ## Diseño
 
