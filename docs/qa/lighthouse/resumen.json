@@ -1,0 +1,172 @@
+{
+  "fecha": "2026-10-21T00:19:14.149Z",
+  "lighthouse": "lighthouse@13.5.0",
+  "configuracion": "móvil por defecto (Moto G Power emulado, 4G lenta simulada, CPU 4×)",
+  "servidor": "astro preview (http://localhost:4401), sin GA4",
+  "corridasPorPagina": 3,
+  "paginas": {
+    "/": {
+      "reporte": "docs/qa/lighthouse/landing.report.html",
+      "mediana": {
+        "puntajes": {
+          "performance": 0.97,
+          "accessibility": 1,
+          "best-practices": 1,
+          "seo": 1
+        },
+        "metricas": {
+          "fcpMs": 1503,
+          "lcpMs": 2404,
+          "tbtMs": 0,
+          "cls": 0,
+          "speedIndexMs": 1503,
+          "pesoTotalKiB": 211
+        },
+        "fallidas": {
+          "performance": [
+            "first-contentful-paint",
+            "largest-contentful-paint",
+            "network-dependency-tree-insight",
+            "interactive"
+          ],
+          "accessibility": [
+            "label-content-name-mismatch"
+          ],
+          "best-practices": [],
+          "seo": []
+        }
+      },
+      "corridas": [
+        {
+          "puntajes": {
+            "performance": 0.98,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 1
+          },
+          "metricas": {
+            "fcpMs": 1503,
+            "lcpMs": 2330,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1503,
+            "pesoTotalKiB": 211
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.97,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 1
+          },
+          "metricas": {
+            "fcpMs": 1503,
+            "lcpMs": 2404,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1503,
+            "pesoTotalKiB": 211
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.97,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 1
+          },
+          "metricas": {
+            "fcpMs": 1503,
+            "lcpMs": 2404,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1503,
+            "pesoTotalKiB": 211
+          }
+        }
+      ]
+    },
+    "/aviso-de-privacidad": {
+      "reporte": "docs/qa/lighthouse/aviso-de-privacidad.report.html",
+      "mediana": {
+        "puntajes": {
+          "performance": 0.99,
+          "accessibility": 1,
+          "best-practices": 1,
+          "seo": 0.66
+        },
+        "metricas": {
+          "fcpMs": 1502,
+          "lcpMs": 1652,
+          "tbtMs": 0,
+          "cls": 0,
+          "speedIndexMs": 1502,
+          "pesoTotalKiB": 141
+        },
+        "fallidas": {
+          "performance": [
+            "first-contentful-paint",
+            "largest-contentful-paint",
+            "network-dependency-tree-insight"
+          ],
+          "accessibility": [],
+          "best-practices": [],
+          "seo": [
+            "is-crawlable"
+          ]
+        }
+      },
+      "corridas": [
+        {
+          "puntajes": {
+            "performance": 0.99,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 0.66
+          },
+          "metricas": {
+            "fcpMs": 1502,
+            "lcpMs": 1652,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1502,
+            "pesoTotalKiB": 141
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.99,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 0.66
+          },
+          "metricas": {
+            "fcpMs": 1502,
+            "lcpMs": 1652,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1502,
+            "pesoTotalKiB": 141
+          }
+        },
+        {
+          "puntajes": {
+            "performance": 0.99,
+            "accessibility": 1,
+            "best-practices": 1,
+            "seo": 0.66
+          },
+          "metricas": {
+            "fcpMs": 1503,
+            "lcpMs": 1653,
+            "tbtMs": 0,
+            "cls": 0,
+            "speedIndexMs": 1503,
+            "pesoTotalKiB": 141
+          }
+        }
+      ]
+    }
+  }
+}
