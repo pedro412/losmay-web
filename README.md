@@ -148,11 +148,11 @@ Un solo listener en `document` lee `data-track` y los parámetros (`data-ubicaci
 <a href={wa.general} {...track("click_whatsapp", { ubicacion: "hero" })}>
 ```
 
-| Evento              | Parámetros                                                                                                          | Dónde                         |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Evento              | Parámetros                                                                                                                        | Dónde                         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `click_whatsapp`    | `ubicacion`: `header`, `menu_movil`, `hero`, `pedido_16t`, `pedido_24t`, `pedido_32t`, `pedido_mas32t`, `cta_final`, `pagina_404` | todos los botones de WhatsApp |
-| `click_llamar`      | `sucursal`: `santa_rosalia`, `santa_isabel`; `ubicacion`: `sucursales`, `footer`                                    | links `tel:`                  |
-| `click_como_llegar` | `sucursal`: `santa_rosalia`, `santa_isabel`                                                                         | links de Google Maps          |
+| `click_llamar`      | `sucursal`: `santa_rosalia`, `santa_isabel`; `ubicacion`: `sucursales`, `footer`                                                  | links `tel:`                  |
+| `click_como_llegar` | `sucursal`: `santa_rosalia`, `santa_isabel`                                                                                       | links de Google Maps          |
 
 `header` cubre los tres botones de WhatsApp de la barra (redondo en móvil, redondo en escritorio compacto y verde desde 1024px). Los tipos de `track()` solo aceptan esos eventos y ubicaciones: para un botón nuevo, agrega su `ubicacion` a `UbicacionWhatsApp` o `UbicacionLlamar` en `src/lib/analytics.ts`.
 
