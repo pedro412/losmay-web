@@ -56,8 +56,20 @@ function textosDelDiseno(): string[] {
     "Más de 32 toneladas",
     "Obra grande o entregas por etapa",
   ];
-  return [...new Set([...textos, ...delScript])];
+  return [...new Set([...textos, ...delScript])].filter(
+    (t) => !t.startsWith("[") && !REEMPLAZADOS_POR_EL_CLIENTE.includes(t),
+  );
 }
+
+/**
+ * Textos del diseño que acompañaban un dato pendiente («[zonas]»,
+ * «[Confirmar]»…) y que se cambiaron por lo que confirmó Los May. Los
+ * corchetes del diseño se filtran aparte.
+ */
+const REEMPLAZADOS_POR_EL_CLIENTE = [
+  "Catálogo completo:",
+  "Sí, en Ciudad del Carmen. Fuera de la ciudad:",
+];
 
 /** El «₂» de «CO₂» se pinta como <sub>2</sub> (Barlow no trae el glifo). */
 const normalizar = (t: string) =>
