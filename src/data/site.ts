@@ -788,6 +788,18 @@ export const avisoPrivacidad = {
 /* -------------------------------------------------------------------------- */
 
 /**
+ * Página 404 (`src/pages/404.astro`): la que sale con un link roto o mal
+ * copiado, p. ej. uno que se reenvió por WhatsApp. No viene en el diseño.
+ */
+export const paginaNoEncontrada = {
+  eyebrow: "Error 404",
+  titulo: "Esta página no existe.",
+  texto:
+    "Puede que el link esté mal escrito o que la página ya no exista. Si buscas cemento Holcim por mayoreo, estás en el lugar correcto.",
+  seoTitulo: `Página no encontrada | ${negocio.nombreCorto}`,
+} as const;
+
+/**
  * Metadatos de la landing: `<title>`, `meta description`, Open Graph y
  * Twitter card (ver `src/components/Seo.astro`).
  *

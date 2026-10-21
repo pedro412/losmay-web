@@ -150,7 +150,7 @@ Un solo listener en `document` lee `data-track` y los parámetros (`data-ubicaci
 
 | Evento              | Parámetros                                                                                                          | Dónde                         |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `click_whatsapp`    | `ubicacion`: `header`, `menu_movil`, `hero`, `pedido_16t`, `pedido_24t`, `pedido_32t`, `pedido_mas32t`, `cta_final` | todos los botones de WhatsApp |
+| `click_whatsapp`    | `ubicacion`: `header`, `menu_movil`, `hero`, `pedido_16t`, `pedido_24t`, `pedido_32t`, `pedido_mas32t`, `cta_final`, `pagina_404` | todos los botones de WhatsApp |
 | `click_llamar`      | `sucursal`: `santa_rosalia`, `santa_isabel`; `ubicacion`: `sucursales`, `footer`                                    | links `tel:`                  |
 | `click_como_llegar` | `sucursal`: `santa_rosalia`, `santa_isabel`                                                                         | links de Google Maps          |
 
@@ -241,7 +241,7 @@ HTTPS y HSTS los pone Vercel (certificado automático para cada dominio). `astro
 En Vercel (Settings → Domains del proyecto `losmay-web`):
 
 - [ ] `losmay.com` ya está asignado al proyecto: dejarlo como dominio principal de **Production**.
-- [ ] Agregar `www.losmay.com` con **Redirect to** `losmay.com` (308). El canónico es el apex, sin `www`, igual que `site` en `astro.config.mjs`.
+- [x] Agregar `www.losmay.com` con **Redirect to** `losmay.com` (308) (hecho el 2026-10-21). El canónico es el apex, sin `www`, igual que `site` en `astro.config.mjs`.
 - [ ] Agregar `PUBLIC_GA_ID` solo en el entorno **Production** y volver a publicar (ver [Analytics](#analytics-ga4)).
 
 En Hostinger (DNS de `losmay.com`):

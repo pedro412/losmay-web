@@ -292,10 +292,6 @@ test.describe("Espaciado de texto del usuario (WCAG 1.4.12)", () => {
 test("una URL que no existe responde 404 con la marca y un link al inicio", async ({
   page,
 }) => {
-  test.fail(
-    true,
-    "No hay src/pages/404.astro: en Vercel sale la página 404 genérica, sin header, footer ni link a la landing",
-  );
   const respuesta = await page.goto("/no-existe");
   expect(respuesta!.status()).toBe(404);
   await expect(page.getByRole("banner")).toBeVisible();
@@ -303,7 +299,27 @@ test("una URL que no existe responde 404 con la marca y un link al inicio", asyn
   await expect(
     page.getByRole("main").locator('a[href="/"]').first(),
   ).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
+  await expect(
+    page.getByRole("main").locator('a[href^="https://wa.me/"]'),
+  ).toHaveAttribute("data-ubicacion", "pagina_404");
 });
+
+for (const ancho of ANCHOS) {
+  test(`la 404 no tiene scroll horizontal a ${ancho}px`, async ({ page }) => {
+    await page.setViewportSize({ width: ancho, height: 800 });
+    await page.goto("/no-existe");
+    await page.evaluate(() => document.fonts.ready);
+    const medidas = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      ancho: window.innerWidth,
+    }));
+    expect(medidas.scroll).toBeLessThanOrEqual(medidas.ancho);
+  });
+}
 
 /* Sin scroll horizontal también en el aviso con todos los anchos de la fase. */
 for (const ancho of ANCHOS) {

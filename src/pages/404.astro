@@ -1,0 +1,53 @@
+---
+/**
+ * Página 404. Vercel la sirve (con status 404) para cualquier URL que no
+ * exista, en lugar de su página genérica: así un link roto de la campaña
+ * sigue mostrando la marca, el regreso a la landing y el WhatsApp.
+ *
+ * Mismo layout que el aviso de privacidad (header simple). Lleva `noindex`, y
+ * `@astrojs/sitemap` ya deja fuera las páginas 404.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import Icon from "../components/Icon.astro";
+import { paginaNoEncontrada, ui, wa } from "../data/site";
+import { track } from "../lib/analytics";
+
+const { eyebrow, titulo, texto, seoTitulo } = paginaNoEncontrada;
+---
+
+<BaseLayout title={seoTitulo} headerSimple noindex>
+  <!-- Alto mínimo: con tan poco contenido, el footer quedaría a media pantalla. -->
+  <section
+    aria-labelledby="error-titulo"
+    class="flex min-h-[70svh] items-center bg-white py-[clamp(48px,8cqi,120px)] page-gutter"
+  >
+    <div class="mx-auto w-full max-w-[760px]">
+      <p class="m-0 eyebrow text-rojo">{eyebrow}</p>
+      <h1
+        id="error-titulo"
+        class="mt-2.5 mb-0 display-heading text-section text-marino"
+      >
+        {titulo}
+      </h1>
+      <p class="mt-4 mb-0 max-w-[560px] text-[17px] text-acero">{texto}</p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <Button variant="marino" size="lg" shape="lg" href="/">
+          <Icon slot="start" name="chevron-derecha" size={20} class="rotate-180" />
+          {ui.volverAlInicio}
+        </Button>
+        <Button
+          variant="whatsapp"
+          size="lg"
+          shape="lg"
+          external
+          href={wa.general}
+          {...track("click_whatsapp", { ubicacion: "pagina_404" })}
+        >
+          {ui.cotizarWhatsApp}
+        </Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

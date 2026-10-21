@@ -28,7 +28,8 @@ export type UbicacionWhatsApp =
   | "hero"
   | `pedido_${number}t`
   | "pedido_mas32t"
-  | "cta_final";
+  | "cta_final"
+  | "pagina_404";
 
 /** Dónde está el link `tel:` que se tocó. */
 export type UbicacionLlamar = "sucursales" | "footer";
