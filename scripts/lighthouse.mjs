@@ -6,8 +6,9 @@
 //   depender de que haya un Chrome instalado.
 // - Corre cada página varias veces y se queda con la corrida mediana por
 //   puntaje de Performance (la simulación varía un poco entre corridas).
-// - Guarda por página el reporte HTML y JSON de la mediana, y un
-//   `resumen.json` con los puntajes y métricas de todas las corridas.
+// - Guarda por página el reporte HTML de la mediana (trae el JSON completo
+//   adentro: se puede abrir en https://googlechrome.github.io/lighthouse/viewer/)
+//   y un `resumen.json` con los puntajes y métricas de todas las corridas.
 // - Termina con error si la landing no llega a 95 en alguna categoría o si la
 //   mediana no cumple LCP < 2.5 s y CLS < 0.1 (criterios del issue #16).
 //
@@ -178,12 +179,10 @@ async function main() {
           b.metricas.lcpMs - a.metricas.lcpMs,
       );
       const mediana = ordenadas[Math.floor((ordenadas.length - 1) / 2)];
-      for (const ext of ["html", "json"]) {
-        await copyFile(
-          `${mediana.base}.report.${ext}`,
-          `${destino}${pagina.nombre}.report.${ext}`,
-        );
-      }
+      await copyFile(
+        `${mediana.base}.report.html`,
+        `${destino}${pagina.nombre}.report.html`,
+      );
 
       const { base: _, ...elegida } = mediana;
       resumen.paginas[pagina.ruta] = {
