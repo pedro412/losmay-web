@@ -60,8 +60,9 @@ const IMMUTABLE = "public, max-age=31536000, immutable";
 test.describe("Vercel (#14)", () => {
   test("los assets con hash de /_astro llevan caché immutable", () => {
     const assets = archivos().filter((r) => r.startsWith("/_astro/"));
-    // CSS, fuentes e imágenes procesadas, como mínimo.
-    expect(assets.some((r) => r.endsWith(".css"))).toBe(true);
+    // Fuentes e imágenes procesadas, como mínimo. El CSS va dentro del HTML
+    // (`build.inlineStylesheets`, issue #16); si algún día sale a un archivo,
+    // también cae en /_astro y le aplica la misma regla.
     expect(assets.some((r) => r.endsWith(".woff2"))).toBe(true);
     expect(assets.some((r) => /\.(avif|webp)$/.test(r))).toBe(true);
     for (const ruta of assets) {

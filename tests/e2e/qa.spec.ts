@@ -306,6 +306,16 @@ test.describe("Presupuesto de JS y estabilidad (producción simulada)", () => {
     expect(red.externas).toEqual([]);
   });
 
+  test("ningún CSS bloquea el primer pintado: va dentro del HTML", async ({
+    page,
+  }) => {
+    for (const ruta of PAGINAS) {
+      await page.goto(ruta);
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(0);
+      expect(await page.locator("head style").count()).toBeGreaterThan(0);
+    }
+  });
+
   test("CLS < 0.1 en móvil aunque las fuentes tarden en llegar", async ({
     page,
   }) => {

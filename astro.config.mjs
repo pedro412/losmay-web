@@ -37,6 +37,14 @@ export default defineConfig({
   // Dominio de producción: base de la canónica, de las URLs de Open Graph y
   // JSON-LD, del sitemap y del robots.txt.
   site: negocio.url,
+  build: {
+    // QA de performance (issue #16): el CSS (~7 KB con gzip) va dentro del
+    // HTML y no en un archivo aparte que bloquea el primer pintado. En 4G
+    // lenta ahorra una ida y vuelta antes de pintar (Lighthouse: «Render
+    // blocking requests»). Es una landing de una sola página, así que casi
+    // no se pierde la caché compartida entre páginas.
+    inlineStylesheets: "always",
+  },
   integrations: [
     // `/sitemap-index.xml` con todas las páginas, menos las que no se indexan
     // (`seo.rutasSinIndexar` en src/data/site.ts).
